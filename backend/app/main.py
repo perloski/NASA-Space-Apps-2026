@@ -106,3 +106,60 @@ def health():
 @app.get("/api/targets")
 def get_targets():
     return targets.listing()
+
+
+@app.get("/api/sky")
+def get_sky(
+    ra: float | None = None, dec: float | None = None, fov_arcmin: float | None = None,
+    target: str | None = None, detectors: str | None = None,
+):
+    q, target_name, coord_epoch = _resolve(ra, dec, fov_arcmin, target)
+    dets = _parse_detectors(detectors)
+    if config.MOCK:
+        return mock.sky(q, target_name, coord_epoch)
+
+    frames, strategy, epochs = _frames_and_epochs(q, dets)
+    qs = q.qs()
+
+    epochs_json = []
+    for e in epochs:
+        stacks = {}
+        for d in spherex.DETECTOR_IDS:
+            n = sum(1 for f in e["frames"] if f["detector"] == d)
+            if n:
+                stacks[d] = {"image_url": f"/api/stack.png?{qs}&epoch={e['id']}&detector={d}", "n_frames": n}
+        stacks["ALL"] = {"image_url": f"/api/stack.png?{qs}&epoch={e['id']}&detector=ALL",
+                         "n_frames": len(e["frames"])}
+        epochs_json.append({k: e[k] for k in ("id", "label", "mjd_start", "mjd_end", "mjd_mid")}
+                           | {"n_frames": len(e["frames"]), "stacks": stacks})
+
+    frames_json = []
+    for f in frames:
+        quality, wl = imaging.quality_if_cached(f, q)
+        frames_json.append(spherex.public_frame_fields(f) | {
+            "wavelength_at_target_um": wl,
+            "image_url": f"/api/frame/{f['id']}.png?{qs}",
+            "fits_url": f"/api/frame/{f['id']}.fits?{qs}",
+            "quality": quality,
+        })
+
+    by_coll: dict[str, int] = {}
+    for f in frames:
+        by_coll[f["collection"]] = by_coll.get(f["collection"], 0) + 1
+
+    return {
+        "schema_version": config.SCHEMA_VERSION,
+        "generated_at": spherex.now_iso(),
+        "query": {"target_name": target_name, "ra_deg": q.ra_deg, "dec_deg": q.dec_deg,
+                  "coord_epoch": coord_epoch, "fov_arcmin": q.fov_arcmin},
+        "grid": grid_json(q),
+        "data_sources": [{"collection": c, "n_frames": n} for c, n in by_coll.items()],
+        "detectors": [{"id": d, "wavelength_um": {"min": lo, "max": hi},
+                       "n_frames": sum(1 for f in frames if f["detector"] == d)}
+                      for d, (lo, hi) in spherex.DETECTORS.items()],
+        "epochs": epochs_json,
+        "epoch_strategy": strategy,
+        "frames": frames_json,
+        "overlays": {"gaia": gaia.overlay(q, epochs)},
+        "render_defaults": {"stretch": "asinh", "units": "MJy/sr", "zodi_subtracted": True},
+    }
