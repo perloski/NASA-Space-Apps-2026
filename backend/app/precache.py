@@ -33,7 +33,6 @@ def warm(target_id: str, fov: float, do_frames: bool, do_phot: bool) -> None:
             except ApiError as err:
                 if err.code != "NO_COVERAGE":
                     print(f"  stack {e['id']}/{d}: {err.message}")
-        imaging.stack_sequence_limits(epochs, q, d, "asinh", "mean")
         print(f"  stacks {d} listos ({time.time() - t0:.0f}s)")
     if do_frames:
         _, complete = imaging.reproject_many(frames, q)

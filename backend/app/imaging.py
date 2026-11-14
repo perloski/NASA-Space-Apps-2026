@@ -260,46 +260,24 @@ def to_fits(a: np.ndarray, q: Query, extra: dict | None = None) -> bytes:
 
 # ----------------------------------------------------------------------------- límites por secuencia
 
-def frame_sequence_limits(frames: list[dict], q: Query, detector: str, stretch: str) -> tuple[float, float]:
-    """Límites comunes para los frames individuales de un detector.
+def sequence_limits(kind: str, q: Query, detector: str, stretch: str,
+                    first: np.ndarray, complete: bool = True) -> tuple[float, float]:
+    """Regla 3: el mismo vmin/vmax para toda una animación (si no, el fondo "titila").
 
-    Bajar TODOS los frames solo para calcular el stretch sería carísimo: se muestrean hasta 8
-    frames repartidos en el tiempo y el resultado se cachea.
+    El PRIMER cuadro que termina de calcularse fija los límites y los demás los reutilizan. Antes
+    cada época esperaba a que estuvieran todas para calcularlos juntos, y el usuario no veía nada
+    hasta que terminaba la última (minutos en zonas con muchas épocas).
+    `kind` separa secuencias distintas: "stack_mean", "frame", etc.
     """
-    key = f"framelim_{detector}_{stretch}__{q.key}"
-    p = cache.path("limits", key, "json")
+    p = cache.path("limits", f"{kind}_{detector}_{stretch}__{q.key}", "json")
     hit = cache.read_json(p)
     if hit:
         return tuple(hit)
-    sel = [f for f in frames if f["detector"] == detector]
-    if len(sel) > 8:
-        idx = np.linspace(0, len(sel) - 1, 8).round().astype(int)
-        sel = [sel[i] for i in sorted(set(idx))]
-    arrs, complete = reproject_many(sel, q)
-    lim = limits(arrs, stretch)
-    if complete:
-        cache.write_json(p, list(lim))
-    return lim
-
-
-def stack_sequence_limits(epochs: list[dict], q: Query, detector: str, stretch: str, op: str) -> tuple[float, float]:
-    """Límites comunes a los stacks de todas las épocas para un detector (la animación por épocas)."""
-    key = f"stacklim_{detector}_{stretch}_{op}_{len(epochs)}__{q.key}"
-    p = cache.path("limits", key, "json")
-    hit = cache.read_json(p)
-    if hit:
-        return tuple(hit)
-    arrs, complete = [], True
-    for e in epochs:
-        try:
-            a, ok = stack_array(epochs, q, e["id"], detector, op)
-            arrs.append(a)
-            complete &= ok
-        except ApiError as err:
-            if err.code == "UPSTREAM_TIMEOUT":
-                raise
-            # NO_COVERAGE: esa época no tiene este detector -> se ignora
-    lim = limits(arrs, stretch)
-    if complete:
-        cache.write_json(p, list(lim))
-    return lim
+    with cache.lock_for(f"limits/{p.name}"):  # el primero escribe; los que llegan después leen eso
+        hit = cache.read_json(p)
+        if hit:
+            return tuple(hit)
+        lim = limits([first], stretch)
+        if complete:
+            cache.write_json(p, list(lim))
+        return lim

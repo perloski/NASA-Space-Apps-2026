@@ -179,8 +179,9 @@ def get_frame_png(frame_id: str, ra: float, dec: float, fov_arcmin: float | None
         f = next((x for x in frames if x["id"] == frame_id), None)
         if f is None:
             raise no_coverage(f"El frame '{frame_id}' no cubre estas coordenadas.")
-        lim = imaging.frame_sequence_limits(frames, q, f["detector"], stretch)
-        return imaging.to_png(imaging.reprojected(f, q), *lim, stretch)
+        a = imaging.reprojected(f, q)
+        lim = imaging.sequence_limits("frame", q, f["detector"], stretch, a)
+        return imaging.to_png(a, *lim, stretch)
 
     return _png(cache.cached_bytes("png", f"frame_{frame_id}_{stretch}__{q.key}", "png", build))
 
@@ -217,7 +218,7 @@ def get_stack_png(ra: float, dec: float, epoch: str, detector: str = "ALL",
     def build() -> bytes:
         _, _, epochs = _frames_and_epochs(q)
         a, complete = imaging.stack_array(epochs, q, epoch, detector, op)
-        lim = imaging.stack_sequence_limits(epochs, q, detector, stretch, op)
+        lim = imaging.sequence_limits(f"stack_{op}", q, detector, stretch, a, complete)
         return imaging.to_png(a, *lim, stretch), complete
 
     return _png(cache.cached_bytes("png", f"stack_{epoch}_{detector}_{op}_{stretch}__{q.key}", "png", build))
