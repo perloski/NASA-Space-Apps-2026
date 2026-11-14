@@ -5,6 +5,8 @@ import AladinView from '../components/AladinView.jsx'
 import PhotometryChart from '../components/PhotometryChart.jsx'
 import PlayerControls from '../components/PlayerControls.jsx'
 import Sidebar, { backgroundUrl } from '../components/Sidebar.jsx'
+import WithHelp from '../components/WithHelp.jsx'
+import { HELP } from '../help.js'
 
 // Estado del visor = parámetros de la URL (copiar el link reproduce la misma vista).
 const DEFAULTS = {
@@ -249,21 +251,24 @@ export default function Viewer() {
           {status && <div className={`viewer-status${statusIsError ? ' error' : ''}`}>{status}</div>}
         </div>
 
-        <PlayerControls
-          playing={playing} onToggle={() => setPlaying((p) => !p)} onPrev={prev} onNext={next}
-          onSelect={setIndex} index={Math.min(index, Math.max(0, count - 1))} count={count}
-          label={cur?.label} sublabel={cur?.sub}
-        />
+        <WithHelp help={HELP.player} className="player-help">
+          <PlayerControls
+            playing={playing} onToggle={() => setPlaying((p) => !p)} onPrev={prev} onNext={next}
+            onSelect={setIndex} index={Math.min(index, Math.max(0, count - 1))} count={count}
+            label={cur?.label} sublabel={cur?.sub}
+          />
+        </WithHelp>
+
 
         {sky && (
           <section className="phot-panel anim" style={{ '--i': 5 }} ref={photRef}>
             <div className="phot-head">
               <h3>{photView === 'spectrum' ? 'Spectrum' : 'Light curve'}</h3>
               {phot.data && photOpen && (
-                <div className="tabs" role="tablist">
+                <WithHelp help={HELP.photViews} innerClassName="tabs" role="tablist">
                   <button className={`tab${photView === 'spectrum' ? ' on' : ''}`} onClick={() => setPhotView('spectrum')}>Spectrum</button>
                   <button className={`tab${photView === 'lightcurve' ? ' on' : ''}`} onClick={() => setPhotView('lightcurve')}>Light curve</button>
-                </div>
+                </WithHelp>
               )}
               {phot.data && photOpen && photView === 'lightcurve' && (
                 <select className="vselect" aria-label="Light curve detector" value={lcDet} onChange={(e) => setLcDet(e.target.value)}>
@@ -271,9 +276,11 @@ export default function Viewer() {
                 </select>
               )}
               {!phot.data && (
-                <button className="btn" onClick={loadPhotometry} disabled={phot.loading}>
-                  {phot.loading ? 'Measuring…' : 'Measure target flux'}
-                </button>
+                <WithHelp help={HELP.photometry}>
+                  <button className="btn" onClick={loadPhotometry} disabled={phot.loading}>
+                    {phot.loading ? 'Measuring…' : 'Measure target flux'}
+                  </button>
+                </WithHelp>
               )}
               {phot.data && (photOpen
                 ? <button className="btn btn-ghost" onClick={closePhot} aria-label="Close spectrum panel">✕ Close</button>

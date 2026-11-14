@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchTargets } from '../api.js'
+import WithHelp from '../components/WithHelp.jsx'
+import { HELP } from '../help.js'
 
 // Respaldo si el backend no responde: mismas coordenadas que el prototipo (sin movimiento propio).
 const FALLBACK = [
@@ -48,17 +50,21 @@ export default function Coords() {
 
       <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <h2 className="heading anim" style={{ '--i': 0 }}>Enter sky coordinates</h2>
-        <input
-          className="input anim" style={{ '--i': 1 }} type="text" autoComplete="off" aria-label="Sky coordinates"
-          value={text} onChange={(e) => { setText(e.target.value); setError('') }}
-        />
+        <WithHelp help={HELP.coordsInput} className="anim help-center" style={{ '--i': 1 }}>
+          <input
+            className="input" type="text" autoComplete="off" aria-label="Sky coordinates"
+            value={text} onChange={(e) => { setText(e.target.value); setError('') }}
+          />
+        </WithHelp>
         <p className="format-hint anim" style={{ '--i': 2 }}>
           {error || 'Suggested format: 133.786245 -7.244373'}
         </p>
       </form>
 
       <div className="try-row">
-        <span className="try-label anim" style={{ '--i': 3 }}>or try:</span>
+        <WithHelp help={HELP.targets} className="anim" style={{ '--i': 3 }}>
+          <span className="try-label">or try:</span>
+        </WithHelp>
         <div className="try-buttons">
           {targets.map((t, i) => (
             <button

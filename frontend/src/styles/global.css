@@ -765,3 +765,73 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
 
 /* Aladin: que sus controles usen la tipografía de la app */
 .aladin-container { font-family: 'Outfit', sans-serif; }
+
+/* ================= Ayuda contextual (WithHelp) ================= */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.help-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 6px;
+}
+/* Ícono ⓘ: círculo de 18 px dentro de un área táctil de 24 px (WCAG 2.5.8) */
+.help-icon {
+  width: 24px; height: 24px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: none; border: none; padding: 0; cursor: help;
+  color: var(--muted);
+  font: italic 700 12px/1 Georgia, 'Times New Roman', serif;
+}
+.help-icon::before {
+  content: ""; position: absolute; width: 18px; height: 18px;
+  border: 1.5px solid currentColor; border-radius: 50%;
+}
+.help-icon { position: relative; }
+.help-icon:hover, .help-icon.on { color: var(--yellow); }
+.help-icon:focus-visible { outline: 2px solid var(--yellow); outline-offset: 1px; border-radius: 50%; }
+
+.help-tip {
+  position: fixed;
+  z-index: 1000;
+  width: min(330px, calc(100vw - 16px));
+  padding: 12px 14px 12px;
+  background: var(--bg-deep);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--orange);
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+  color: #e8edf7;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left;
+}
+.help-tip p + p { margin-top: 4px; }
+.help-tip .help-title { font-weight: 700; font-size: 15px; color: var(--yellow); margin-bottom: 2px; }
+.help-tip .help-label {
+  margin-top: 8px !important;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase;
+  color: var(--orange-light);
+}
+.help-tip .help-tipline {
+  margin-top: 10px !important; padding-top: 8px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .help-tip { animation: help-in 0.12s ease-out; }
+  @keyframes help-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+}
+
+/* Envoltorios de ayuda en lugares puntuales */
+.player-help { width: min(100%, 62vh, 560px); }
+.player-help .player { width: 100%; }
+.player-help > :first-child > div { width: 100% !important; }
+/* el ícono no debe correr el campo centrado de la pantalla de coordenadas */
+.help-center { margin-left: 30px; }
+.try-row .help-wrap .try-label { padding-top: 10px; }
+.try-row > .help-wrap { align-self: flex-start; }
+.try-row > .help-wrap .help-icon { margin-top: 8px; }
+.phot-head .help-wrap { align-items: center; }
