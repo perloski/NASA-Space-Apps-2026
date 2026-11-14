@@ -23,16 +23,19 @@ _pool = ThreadPoolExecutor(max_workers=config.DOWNLOAD_WORKERS, thread_name_pref
 
 # ----------------------------------------------------------------------------- reproyección
 
+def _load_npz(p) -> dict:
+    with np.load(p) as z:  # cerrar el archivo: en Windows uno abierto no se puede reemplazar/borrar
+        return {k: z[k] for k in z.files}
+
+
 def _reproject(frame: dict, q: Query) -> dict:
     """Reproyecta un frame a la grilla. Devuelve arrays + métricas de calidad (cacheadas en .npz)."""
     p = cache.path("reproj", f"{frame['id']}__{q.key}", "npz")
     if p.exists():
-        z = np.load(p)
-        return {k: z[k] for k in z.files}
+        return _load_npz(p)
     with cache.lock_for(f"reproj/{p.name}"):
         if p.exists():
-            z = np.load(p)
-            return {k: z[k] for k in z.files}
+            return _load_npz(p)
         from reproject import reproject_interp
 
         c = spherex.load_cutout(frame, q)
@@ -79,7 +82,7 @@ def quality_if_cached(frame: dict, q: Query) -> tuple[dict, float | None]:
     p = cache.path("reproj", f"{frame['id']}__{q.key}", "npz")
     if not p.exists():
         return {"coverage": None, "flagged_fraction": None, "target_flagged": None}, None
-    z = np.load(p)
+    z = _load_npz(p)
     ff = float(z["flagged_fraction"])
     tf = int(z["target_flagged"])
     wl = float(z["wavelength_um"])
@@ -149,6 +152,15 @@ def stack_array(epochs: list[dict], q: Query, epoch_id: str, detector: str,
     p = cache.path("stack", f"{epoch_id}_{detector}_{op}_{len(sel)}_{ids}__{q.key}", "npy")
     if p.exists():
         return np.load(p), True
+    # Un solo hilo calcula cada stack: el pedido de E1 también arma E2/E3 (para el stretch común)
+    # mientras llegan los pedidos de E2/E3. Sin el lock se calculaban y escribían en paralelo.
+    with cache.lock_for(f"stack/{p.name}"):
+        if p.exists():
+            return np.load(p), True
+        return _compute_stack(sel, q, op, p)
+
+
+def _compute_stack(sel: list[dict], q: Query, op: str, p) -> tuple[np.ndarray, bool]:
     arrs, complete = reproject_many(sel, q)
     if not arrs:
         raise ApiError("INTERNAL", "No se pudo procesar ningún frame de este stack.")

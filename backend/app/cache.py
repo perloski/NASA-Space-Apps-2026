@@ -32,9 +32,21 @@ def path(kind: str, key: str, ext: str) -> Path:
 
 
 def atomic_write_bytes(p: Path, data: bytes) -> None:
+    """Escribe en un temporal y lo renombra. En Windows os.replace falla (Acceso denegado) si otro
+    hilo/proceso tiene el destino abierto: se reintenta un momento y, si el destino ya existe
+    (otro escritor ganó con el mismo contenido), se descarta el temporal."""
     tmp = p.with_suffix(p.suffix + f".tmp{os.getpid()}_{threading.get_ident()}")
     tmp.write_bytes(data)
-    os.replace(tmp, p)
+    for attempt in range(10):
+        try:
+            os.replace(tmp, p)
+            return
+        except PermissionError:
+            time.sleep(0.05 * (attempt + 1))
+    if p.exists():
+        tmp.unlink(missing_ok=True)
+        return
+    os.replace(tmp, p)  # último intento: si falla, que se vea el error
 
 
 def read_json(p: Path, max_age_s: float | None = None) -> Any | None:
