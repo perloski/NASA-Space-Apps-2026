@@ -387,7 +387,9 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* No usar justify-content: center: con overflow, lo que sobra ARRIBA queda cortado y el scroll
+     no llega. Los márgenes automáticos (abajo) centran cuando entra y no cortan cuando crece. */
+  justify-content: flex-start;
   gap: 6px;
   padding: 76px 24px 24px;
   overflow: auto;
@@ -705,6 +707,11 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
 }
 .epoch-dot.on { background: var(--orange); }
 
+/* que nada se encoja (el visor se achataba): si no entra, se scrollea */
+.viewer-main > * { flex-shrink: 0; }
+.viewer-main > .viewer-title { margin-top: auto; }
+.viewer-main > :last-child { margin-bottom: auto; }
+
 /* Panel de fotometría */
 .phot-panel {
   width: min(100%, 720px);
@@ -723,6 +730,30 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
 }
 .tab.on { border-color: var(--orange); color: var(--text); }
 .phot-note { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.phot-head .btn { padding: 7px 12px; font-size: 14px; }
+.btn-ghost { background: transparent; border: 1px solid var(--line); box-shadow: none; }
+.btn-ghost:hover { background: var(--bg-field); border-color: var(--orange); }
+
+/* Tabla de datos: scroll propio (vertical y horizontal) con encabezado fijo */
+.data-table-wrap {
+  margin-top: 6px;
+  max-height: 260px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--orange) transparent;
+}
+.data-table { width: 100%; border-collapse: collapse; font-size: 12px; color: #e8edf7; white-space: nowrap; }
+.data-table th, .data-table td { padding: 4px 8px; }
+.data-table thead th {
+  position: sticky; top: 0; z-index: 1;
+  background: var(--bg-deep); color: var(--muted); font-weight: 500; text-align: right;
+  border-bottom: 1px solid var(--line);
+}
+.data-table th:first-child, .data-table td:first-child { text-align: left; }
+.data-table td { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table tbody tr:nth-child(even) { background: rgba(34, 50, 90, 0.25); }
 
 /* Sidebar: pequeños agregados */
 .sidebar .hint { color: var(--muted); font-size: 13px; font-weight: 400; }

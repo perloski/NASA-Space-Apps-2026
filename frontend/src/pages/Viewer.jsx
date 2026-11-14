@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { apiUrl, diffUrl, fetchPhotometry, fetchSky, withParams } from '../api.js'
 import AladinView from '../components/AladinView.jsx'
@@ -148,7 +148,19 @@ export default function Viewer() {
   const [phot, setPhot] = useState({ loading: false, data: null, error: null })
   const [photView, setPhotView] = useState('spectrum')
   const [lcDet, setLcDet] = useState('D5')
-  useEffect(() => { setPhot({ loading: false, data: null, error: null }) }, [queryQs])
+  const [photOpen, setPhotOpen] = useState(true) // plegar el panel sin perder los datos medidos
+  const mainRef = useRef(null)
+  const photRef = useRef(null)
+  useEffect(() => { setPhot({ loading: false, data: null, error: null }); setPhotOpen(true) }, [queryQs])
+
+  function closePhot() {
+    setPhotOpen(false)
+    mainRef.current?.scrollTo({ top: 0, behavior: 'smooth' }) // volver al visor
+  }
+  function openPhot() {
+    setPhotOpen(true)
+    requestAnimationFrame(() => photRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }))
+  }
 
   function loadPhotometry() {
     if (!sky) return
@@ -157,7 +169,7 @@ export default function Viewer() {
     if (s.det !== 'ALL') p.set('detectors', s.det)
     setPhot({ loading: true, data: null, error: null })
     fetchPhotometry(p.toString())
-      .then((data) => setPhot({ loading: false, data, error: null }))
+      .then((data) => { setPhot({ loading: false, data, error: null }); openPhot() })
       .catch((e) => setPhot({ loading: false, data: null, error: e.message }))
   }
 
@@ -215,7 +227,7 @@ export default function Viewer() {
         onDefaults={onDefaults} onShare={onShare} shareMsg={shareMsg} current={cur?.frame}
       />
 
-      <main className="viewer-main">
+      <main className="viewer-main" ref={mainRef}>
         <button className="btn btn-corner btn-left" onClick={() => navigate('/explore')}>← BACK</button>
         <span className="brand-small">OpenSPHEREx</span>
 
@@ -244,25 +256,28 @@ export default function Viewer() {
         />
 
         {sky && (
-          <section className="phot-panel anim" style={{ '--i': 5 }}>
+          <section className="phot-panel anim" style={{ '--i': 5 }} ref={photRef}>
             <div className="phot-head">
               <h3>{photView === 'spectrum' ? 'Spectrum' : 'Light curve'}</h3>
-              {phot.data && (
+              {phot.data && photOpen && (
                 <div className="tabs" role="tablist">
                   <button className={`tab${photView === 'spectrum' ? ' on' : ''}`} onClick={() => setPhotView('spectrum')}>Spectrum</button>
                   <button className={`tab${photView === 'lightcurve' ? ' on' : ''}`} onClick={() => setPhotView('lightcurve')}>Light curve</button>
                 </div>
               )}
-              {phot.data && photView === 'lightcurve' && (
+              {phot.data && photOpen && photView === 'lightcurve' && (
                 <select className="vselect" aria-label="Light curve detector" value={lcDet} onChange={(e) => setLcDet(e.target.value)}>
                   {sky.detectors.map((d) => <option key={d.id} value={d.id}>{d.id}</option>)}
                 </select>
               )}
               {!phot.data && (
-                <button className="btn" style={{ padding: '7px 12px' }} onClick={loadPhotometry} disabled={phot.loading}>
+                <button className="btn" onClick={loadPhotometry} disabled={phot.loading}>
                   {phot.loading ? 'Measuring…' : 'Measure target flux'}
                 </button>
               )}
+              {phot.data && (photOpen
+                ? <button className="btn btn-ghost" onClick={closePhot} aria-label="Close spectrum panel">✕ Close</button>
+                : <button className="btn" onClick={openPhot}>Show {photView === 'spectrum' ? 'spectrum' : 'light curve'}</button>)}
             </div>
 
             {phot.loading && (
@@ -276,7 +291,10 @@ export default function Viewer() {
                 and water absorption in brown dwarfs) or against time (light curve, for variable stars).
               </p>
             )}
-            {phot.data && (
+            {phot.data && !photOpen && (
+              <p className="phot-note">{phot.data.points.length} points measured. Open the panel to see the chart and the data.</p>
+            )}
+            {phot.data && photOpen && (
               <>
                 <PhotometryChart points={photPoints} view={photView} detectors={sky.detectors} />
                 <p className="phot-note">
@@ -284,21 +302,23 @@ export default function Viewer() {
                 </p>
                 <details className="phot-note">
                   <summary>Show data table</summary>
-                  <table style={{ width: '100%', fontSize: 12, marginTop: 6 }}>
-                    <thead><tr><th align="left">Frame</th><th>Det</th><th>λ (µm)</th><th>MJD</th><th>Flux</th><th>Err</th><th>Flag</th></tr></thead>
-                    <tbody>
-                      {photPoints.map((p) => (
-                        <tr key={p.frame_id}>
-                          <td>{p.frame_id}</td><td align="center">{p.detector}</td>
-                          <td align="right">{p.wavelength_um?.toFixed(3) ?? '–'}</td>
-                          <td align="right">{p.mjd.toFixed(3)}</td>
-                          <td align="right">{p.flux.toFixed(4)}</td>
-                          <td align="right">{p.flux_err?.toFixed(4) ?? '–'}</td>
-                          <td align="center">{p.flagged ? '⚑' : ''}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div className="data-table-wrap" tabIndex={0} aria-label="Photometry data table">
+                    <table className="data-table">
+                      <thead><tr><th>Frame</th><th>Det</th><th>λ (µm)</th><th>MJD</th><th>Flux</th><th>Err</th><th>Flag</th></tr></thead>
+                      <tbody>
+                        {photPoints.map((p) => (
+                          <tr key={p.frame_id}>
+                            <td>{p.frame_id}</td><td>{p.detector}</td>
+                            <td>{p.wavelength_um?.toFixed(3) ?? '–'}</td>
+                            <td>{p.mjd.toFixed(3)}</td>
+                            <td>{p.flux.toFixed(4)}</td>
+                            <td>{p.flux_err?.toFixed(4) ?? '–'}</td>
+                            <td>{p.flagged ? '⚑' : ''}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </details>
               </>
             )}
