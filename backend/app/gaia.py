@@ -14,6 +14,15 @@ from .grid import Query
 
 log = logging.getLogger(__name__)
 
+# ERFA avisa "distance overridden" (estrellas sin paralaje: se usa una distancia enorme a propósito)
+# y "dubious year" (fechas futuras, sin tabla de segundos intercalares): ninguno es un error y
+# llenaban el log del servidor.
+import warnings  # noqa: E402
+
+from erfa import ErfaWarning  # noqa: E402
+
+warnings.filterwarnings("ignore", category=ErfaWarning)
+
 GAIA_EPOCH = Time(2016.0, format="jyear")
 
 
