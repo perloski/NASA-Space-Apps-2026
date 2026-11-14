@@ -111,3 +111,55 @@ def reproject_many(frames: list[dict], q: Query) -> tuple[list[np.ndarray], bool
     if transient and not arrays:
         raise upstream_timeout("IRSA (cutout)")
     return arrays, transient == 0
+
+
+# ----------------------------------------------------------------------------- stacks / diff
+
+def _select(frames: list[dict], epoch_id: str | None, detector: str) -> list[dict]:
+    out = [f for f in frames if epoch_id is None or f.get("epoch_id") == epoch_id]
+    if detector != "ALL":
+        out = [f for f in out if f["detector"] == detector]
+    return out
+
+
+def stack_array(epochs: list[dict], q: Query, epoch_id: str, detector: str,
+                op: str = "mean") -> tuple[np.ndarray, bool]:
+    """-> (imagen, completo). Solo se cachea si están todos los frames."""
+    ep = next((e for e in epochs if e["id"] == epoch_id), None)
+    if ep is None:
+        raise bad_params(f"Época '{epoch_id}' inexistente para estas coordenadas.")
+    sel = _select(ep["frames"], None, detector)
+    if not sel:
+        raise ApiError("NO_COVERAGE", f"No hay frames del detector {detector} en la época {epoch_id}.")
+    p = cache.path("stack", f"{epoch_id}_{detector}_{op}_{len(sel)}__{q.key}", "npy")
+    if p.exists():
+        return np.load(p), True
+    arrs, complete = reproject_many(sel, q)
+    if not arrs:
+        raise ApiError("INTERNAL", "No se pudo procesar ningún frame de este stack.")
+    cube = np.stack(arrs)
+    with np.errstate(all="ignore"), _quiet():
+        if op == "median":
+            out = np.nanmedian(cube, axis=0)
+        elif op == "sum":
+            out = np.nansum(cube, axis=0)
+            out[np.all(np.isnan(cube), axis=0)] = np.nan
+        else:
+            out = np.nanmean(cube, axis=0)
+    out = out.astype(np.float32)
+    if complete:
+        buf = io.BytesIO()
+        np.save(buf, out)
+        cache.atomic_write_bytes(p, buf.getvalue())
+    return out, complete
+
+
+class _quiet:
+    def __enter__(self):
+        import warnings
+        self._w = warnings.catch_warnings()
+        self._w.__enter__()
+        warnings.simplefilter("ignore", RuntimeWarning)
+
+    def __exit__(self, *a):
+        self._w.__exit__(*a)
