@@ -166,3 +166,50 @@ def get_frame(q: Query, frame_id: str) -> dict:
         if f["id"] == frame_id:
             return f
     raise no_coverage(f"El frame '{frame_id}' no cubre estas coordenadas.")
+
+
+# ----------------------------------------------------------------------------- épocas
+
+def _month_label(mjd: float) -> str:
+    return Time(mjd, format="mjd").datetime.strftime("%b %Y")
+
+
+def group_epochs(frames: list[dict]) -> tuple[str, list[dict]]:
+    """Asigna epoch_id a cada frame (in place) y devuelve (estrategia, épocas)."""
+    if not frames:
+        return "gap", []
+    frames.sort(key=lambda f: f["mjd"])
+    groups: list[list[dict]] = [[frames[0]]]
+    for f in frames[1:]:
+        if f["mjd"] - groups[-1][-1]["mjd"] > config.EPOCH_GAP_DAYS:
+            groups.append([f])
+        else:
+            groups[-1].append(f)
+    strategy = "gap"
+    if any(g[-1]["mjd"] - g[0]["mjd"] > config.EPOCH_MAX_SPAN_DAYS for g in groups):
+        # cobertura continua (cerca de los polos eclípticos): cortar en bins fijos de 30 días
+        strategy = "bins_30d"
+        t0 = frames[0]["mjd"]
+        bins: dict[int, list[dict]] = {}
+        for f in frames:
+            bins.setdefault(int((f["mjd"] - t0) // config.EPOCH_BIN_DAYS), []).append(f)
+        groups = [bins[k] for k in sorted(bins)]
+
+    epochs, seen_labels = [], {}
+    for i, g in enumerate(groups, start=1):
+        eid = f"E{i}"
+        start, end = g[0]["mjd"], g[-1]["mjd"]
+        mid = (start + end) / 2.0
+        label = _month_label(mid)
+        n = seen_labels.get(label, 0)
+        seen_labels[label] = n + 1
+        if n:
+            label = f"{label} ({n + 1})"
+        for f in g:
+            f["epoch_id"] = eid
+        epochs.append({
+            "id": eid, "label": label,
+            "mjd_start": round(start, 6), "mjd_end": round(end, 6), "mjd_mid": round(mid, 6),
+            "frames": g,
+        })
+    return strategy, epochs
