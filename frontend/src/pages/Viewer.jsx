@@ -13,7 +13,7 @@ import { HELP } from '../help.js'
 // Estado del visor = parámetros de la URL (copiar el link reproduce la misma vista).
 const DEFAULTS = {
   fov: 10, det: 'ALL', mode: 'blink', stretch: 'asinh', speed: 500,
-  opacity: 1, bg: 'allwise', gaia: true, invert: false, mark: true,
+  opacity: 1, bg: 'none', gaia: true, invert: false, mark: true,
 }
 const MIN_ARROW_SPEED = 0.5 // arcsec/año: más lento que esto la flecha no se vería
 const MAX_FRAMES = 40 // modo "frames": cada frame es una capa; más que esto satura el navegador

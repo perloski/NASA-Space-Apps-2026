@@ -37,6 +37,7 @@ export default function AladinView({
   const aladinRef = useRef(null)
   const gaiaRef = useRef(null)
   const markRef = useRef(null)
+  const baseRef = useRef(null)      // { url, layer }: capa de fondo creada por nosotros
   const imgLayersRef = useRef([])   // [{ name, layer }]
   const genRef = useRef(0)          // generación de capas: ignora callbacks de capas viejas
   const onStatusRef = useRef(onStatus)
@@ -57,6 +58,7 @@ export default function AladinView({
         // Aladin siempre tiene una capa base; con 'none' se crea igual y se deja transparente
         survey: background === 'none' ? FALLBACK_SURVEY : background,
         cooFrame: 'ICRS',
+        backgroundColor: 'rgb(5, 9, 20)', // = --bg; con fondo 'None' se ve cielo oscuro, no gris
         showReticle: true,
         showCooGridControl: false,
         showProjectionControl: false,
@@ -88,6 +90,7 @@ export default function AladinView({
       aladinRef.current = null
       gaiaRef.current = null
       markRef.current = null
+      baseRef.current = null
       imgLayersRef.current = []
       setReady(false)
     }
@@ -102,12 +105,22 @@ export default function AladinView({
     aladin.setFoV(fovArcmin / 60)
   }, [ready, ra, dec, fovArcmin])
 
-  // 3) Fondo (otra misión: AllWISE por defecto)
+  // 3) Fondo (mapa de otra misión, o ninguno)
+  // La capa se crea acá y se guarda la referencia: getBaseImageLayer() no devuelve nada mientras
+  // la capa está cargando, y Aladin 3.8.2 convierte "opacity: 0" en 1 en el constructor
+  // (opacity || 1). Por eso se fija la opacidad con setOpacity sobre nuestra propia capa.
   useEffect(() => {
     const aladin = aladinRef.current
     if (!ready || !aladin) return
-    if (background !== 'none') aladin.setBaseImageLayer(background)
-    aladin.getBaseImageLayer()?.setOpacity(background === 'none' ? 0 : 1)
+    const none = background === 'none'
+    const url = none ? FALLBACK_SURVEY : background
+    if (baseRef.current?.url !== url) {
+      const layer = A.HiPS(url, { opacity: none ? 0 : 1 })
+      layer.setOpacity(none ? 0 : 1)
+      aladin.setBaseImageLayer(layer)
+      baseRef.current = { url, layer }
+    }
+    baseRef.current.layer.setOpacity(none ? 0 : 1)
   }, [ready, background])
 
   // 4) Capas de SPHEREx: se (re)crean solo cuando cambia la secuencia, no en cada cuadro

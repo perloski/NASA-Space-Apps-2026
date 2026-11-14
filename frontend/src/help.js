@@ -90,7 +90,7 @@ export const HELP = {
     terms: ['wise', '2mass'],
     does: 'A map of the whole sky made by another telescope, shown under and around the SPHEREx picture.',
     see: '“AllWISE” is an infrared map taken by NASA’s WISE satellite around 2010, so you can compare with SPHEREx 15 years later. “AllWISE W2” shows a single infrared color very close to D5 and D6. “2MASS” is an infrared map from 1997–2001: the longest time gap, perfect for seeing how far nearby stars have moved.',
-    tip: 'Pick “None” if you only want to see SPHEREx.',
+    tip: 'It starts on “None”, showing only SPHEREx. Pick a map to compare SPHEREx with older pictures of the same spot.',
   },
   gaia: {
     title: 'Gaia stars',
