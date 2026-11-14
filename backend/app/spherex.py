@@ -213,3 +213,145 @@ def group_epochs(frames: list[dict]) -> tuple[str, list[dict]]:
             "frames": g,
         })
     return strategy, epochs
+
+
+# ----------------------------------------------------------------------------- cutouts
+
+def _cutout_url(access_url: str, q: Query) -> str:
+    size_deg = q.fov_arcmin * config.CUTOUT_MARGIN / 60.0
+    sep = "&" if "?" in access_url else "?"
+    return f"{access_url}{sep}center={q.ra_deg:.6f},{q.dec_deg:.6f}deg&size={size_deg:.5f}deg"
+
+
+# Extensiones que guardamos en caché. EPSF (~3.8 MB por cutout) no se usa y se descarta.
+_KEEP_EXT = ("IMAGE", "FLAGS", "VARIANCE", "ZODI", "WCS-WAVE")
+_RETRY_STATUS = {429, 500, 502, 503, 504}
+
+
+def _http_get_fits(url: str, what: str) -> bytes:
+    """GET con reintentos y backoff: IRSA responde 503 'Server busy' de forma intermitente."""
+    last = None
+    for attempt in range(config.HTTP_RETRIES):
+        try:
+            r = requests.get(url, timeout=config.HTTP_TIMEOUT_S)
+        except (requests.Timeout, requests.ConnectionError) as e:
+            last = e
+        else:
+            if r.status_code == 200 and r.content.startswith(b"SIMPLE"):
+                return r.content
+            if r.status_code not in _RETRY_STATUS:
+                raise ApiError("INTERNAL", f"IRSA devolvió {r.status_code} para {what}: {r.text[:120]}")
+            last = f"HTTP {r.status_code}"
+        time.sleep(min(8.0, 0.5 * 2 ** attempt) + random.random() * 0.5)
+    log.warning("IRSA sin respuesta para %s tras %d intentos (%s)", what, config.HTTP_RETRIES, last)
+    raise upstream_timeout("IRSA (cutout)")
+
+
+def _strip_extensions(raw: bytes) -> bytes:
+    import io
+
+    with fits.open(io.BytesIO(raw), memmap=False) as hdul:
+        keep = [hdul[0]] + [h for h in hdul[1:] if h.name in _KEEP_EXT]
+        buf = io.BytesIO()
+        fits.HDUList(keep).writeto(buf)
+        return buf.getvalue()
+
+
+def download_cutout(frame: dict, q: Query) -> bytes:
+    def build() -> bytes:
+        raw = _http_get_fits(_cutout_url(frame["access_url"], q), f"el cutout de {frame['id']}")
+        return _strip_extensions(raw)
+
+    return cache.cached_bytes("cutouts", f"{frame['id']}__{q.key}", "fits", build)
+
+
+@dataclass
+class Cutout:
+    """Un cutout de SPHEREx ya parseado. image = IMAGE − ZODI (regla 4), en MJy/sr."""
+    frame: dict
+    image: np.ndarray
+    flags: np.ndarray | None
+    variance: np.ndarray | None
+    header: fits.Header
+    hdul: fits.HDUList
+    flags_header: fits.Header | None = None
+
+    @cached_property
+    def wcs(self) -> WCS:
+        return WCS(self.header)
+
+    @cached_property
+    def bad_mask_bits(self) -> int:
+        """Bits "malos" según MSKNnnnn (nombre del plano n) del header de FLAGS."""
+        bits = 0
+        found = False
+        for k, v in (self.flags_header or {}).items():
+            m = re.fullmatch(r"MSKN(\d{4})", k)
+            if m:
+                found = True
+                if str(v).strip() in config.BAD_FLAG_NAMES:
+                    bits |= 1 << int(m.group(1))
+        if not found:
+            for b in config.BAD_FLAG_BITS_DEFAULT:
+                bits |= 1 << b
+        return bits
+
+    def bad_pixels(self) -> np.ndarray | None:
+        if self.flags is None:
+            return None
+        return (self.flags.astype(np.int64) & self.bad_mask_bits) != 0
+
+    def world_to_pixel(self, ra: float, dec: float) -> tuple[float, float]:
+        x, y = self.wcs.all_world2pix([[ra, dec]], 0)[0]
+        return float(x), float(y)
+
+    def wavelength_um(self, x: float, y: float) -> float | None:
+        """Longitud de onda en el píxel (x, y) usando el WCS espectral alternativo 'W' (WCS-WAVE)."""
+        try:
+            ww = WCS(self.header, fobj=self.hdul, key="W")
+            vals = ww.pixel_to_world_values(x, y)
+            lam = float(np.atleast_1d(vals[0] if isinstance(vals, (tuple, list)) else vals)[0])
+            if np.isfinite(lam) and lam > 0:
+                return round(lam, 4)
+        except Exception as e:  # noqa: BLE001
+            log.debug("WCS espectral no disponible para %s: %s", self.frame["id"], e)
+        return None  # sin WCS espectral no inventamos un valor (el detector cubre un rango amplio)
+
+
+def _ext(hdul: fits.HDUList, name: str, fallback_index: int):
+    try:
+        return hdul[name]
+    except KeyError:
+        return hdul[fallback_index] if len(hdul) > fallback_index else None
+
+
+def load_cutout(frame: dict, q: Query) -> Cutout:
+    import io
+
+    raw = download_cutout(frame, q)
+    hdul = fits.open(io.BytesIO(raw), memmap=False)
+    img_hdu = _ext(hdul, "IMAGE", 1)
+    if img_hdu is None or img_hdu.data is None:
+        raise ApiError("INTERNAL", f"Cutout sin extensión IMAGE: {frame['id']}")
+    image = np.asarray(img_hdu.data, dtype=np.float64)
+    zodi = _ext(hdul, "ZODI", 4)
+    if zodi is not None and zodi.data is not None and zodi.data.shape == image.shape:
+        image = image - np.asarray(zodi.data, dtype=np.float64)
+    flags_hdu = _ext(hdul, "FLAGS", 2)
+    var_hdu = _ext(hdul, "VARIANCE", 3)
+    flags = np.asarray(flags_hdu.data) if flags_hdu is not None and flags_hdu.data is not None else None
+    var = np.asarray(var_hdu.data, dtype=np.float64) if var_hdu is not None and var_hdu.data is not None else None
+    return Cutout(frame=frame, image=image, flags=flags, variance=var, header=img_hdu.header, hdul=hdul,
+                  flags_header=flags_hdu.header if flags_hdu is not None else None)
+
+
+def frames_by_id(frames: list[dict]) -> dict[str, dict]:
+    return {f["id"]: f for f in frames}
+
+
+def now_iso() -> str:
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def public_frame_fields(f: dict) -> dict[str, Any]:
+    return {k: f[k] for k in ("id", "obs_id", "collection", "epoch_id", "detector", "mjd", "date_utc", "exptime_s")}
