@@ -154,4 +154,9 @@ export const HELP = {
     see: 'The arrow points to where the object will be in 10 years. The animation shows only a small part of that trip.',
     tip: 'Turn it off to look at the object without anything covering it.',
   },
+  caption: {
+    title: 'What am I looking at?',
+    does: 'A short description of what is on screen right now, updated as you change the settings or the animation advances.',
+    see: 'Which date and which infrared “color” you are looking at, and what to look for.',
+  },
 }

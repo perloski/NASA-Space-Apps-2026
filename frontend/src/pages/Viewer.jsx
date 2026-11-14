@@ -6,6 +6,7 @@ import PhotometryChart from '../components/PhotometryChart.jsx'
 import PlayerControls from '../components/PlayerControls.jsx'
 import Sidebar, { backgroundUrl } from '../components/Sidebar.jsx'
 import WithHelp from '../components/WithHelp.jsx'
+import ViewCaption from '../components/ViewCaption.jsx'
 import { HELP } from '../help.js'
 
 // Estado del visor = parámetros de la URL (copiar el link reproduce la misma vista).
@@ -279,6 +280,11 @@ export default function Viewer() {
           />
         </WithHelp>
 
+        <ViewCaption
+          sky={sky} mode={s.mode} det={s.det} effDet={effDet} cur={cur}
+          index={Math.min(index, Math.max(0, count - 1))} count={count}
+          speed={s.speed} playing={playing} targetInfo={targetInfo} markerOn={s.mark} moving={moving}
+        />
 
         {sky && (
           <section className="phot-panel anim" style={{ '--i': 5 }} ref={photRef}>
