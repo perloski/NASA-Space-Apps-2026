@@ -221,3 +221,24 @@ def get_stack_png(ra: float, dec: float, epoch: str, detector: str = "ALL",
         return imaging.to_png(a, *lim, stretch), complete
 
     return _png(cache.cached_bytes("png", f"stack_{epoch}_{detector}_{op}_{stretch}__{q.key}", "png", build))
+
+
+@app.get("/api/diff.png")
+def get_diff_png(ra: float, dec: float, a: str, b: str, detector: str = "ALL",
+                 fov_arcmin: float | None = None, stretch: str = "asinh"):
+    """Época B − época A (mismo detector). 0 = gris medio. `stretch` se acepta pero la escala es simétrica."""
+    q = Query.make(ra, dec, fov_arcmin)
+    _check_stretch(stretch)
+    detector = _check_detector(detector)
+    if a == b:
+        raise bad_params("'a' y 'b' deben ser épocas distintas.")
+    if config.MOCK:
+        return _png(imaging.diff_png(mock.stack_array(q, b, detector) - mock.stack_array(q, a, detector)))
+
+    def build() -> bytes:
+        _, _, epochs = _frames_and_epochs(q)
+        sa, ok_a = imaging.stack_array(epochs, q, a, detector)
+        sb, ok_b = imaging.stack_array(epochs, q, b, detector)
+        return imaging.diff_png(sb - sa), ok_a and ok_b
+
+    return _png(cache.cached_bytes("png", f"diff_{a}_{b}_{detector}__{q.key}", "png", build))
