@@ -163,3 +163,40 @@ def get_sky(
         "overlays": {"gaia": gaia.overlay(q, epochs)},
         "render_defaults": {"stretch": "asinh", "units": "MJy/sr", "zodi_subtracted": True},
     }
+
+
+@app.get("/api/frame/{frame_id}.png")
+def get_frame_png(frame_id: str, ra: float, dec: float, fov_arcmin: float | None = None,
+                  stretch: str = "asinh"):
+    q = Query.make(ra, dec, fov_arcmin)
+    _check_stretch(stretch)
+    if config.MOCK:
+        a, _ = mock.frame_array(q, frame_id)
+        return _png(imaging.to_png(a, *imaging.limits([a], stretch), stretch))
+
+    def build() -> bytes:
+        frames, _, _ = _frames_and_epochs(q)
+        f = next((x for x in frames if x["id"] == frame_id), None)
+        if f is None:
+            raise no_coverage(f"El frame '{frame_id}' no cubre estas coordenadas.")
+        lim = imaging.frame_sequence_limits(frames, q, f["detector"], stretch)
+        return imaging.to_png(imaging.reprojected(f, q), *lim, stretch)
+
+    return _png(cache.cached_bytes("png", f"frame_{frame_id}_{stretch}__{q.key}", "png", build))
+
+
+@app.get("/api/frame/{frame_id}.fits")
+def get_frame_fits(frame_id: str, ra: float, dec: float, fov_arcmin: float | None = None):
+    q = Query.make(ra, dec, fov_arcmin)
+    if config.MOCK:
+        a, det = mock.frame_array(q, frame_id)
+        return Response(imaging.to_fits(a, q, {"FRAMEID": frame_id, "DETECTOR": det}),
+                        media_type="application/fits", headers=IMG_HEADERS)
+
+    def build() -> bytes:
+        f = spherex.get_frame(q, frame_id)
+        return imaging.to_fits(imaging.reprojected(f, q), q,
+                               {"FRAMEID": frame_id, "DETECTOR": f["detector"], "MJD-OBS": f["mjd"]})
+
+    data = cache.cached_bytes("fits", f"frame_{frame_id}__{q.key}", "fits", build)
+    return Response(data, media_type="application/fits", headers=IMG_HEADERS)
