@@ -8,6 +8,15 @@
 //   see    qué vas a ver en pantalla al cambiarlo
 //   tip    (opcional) un consejo práctico
 
+// Una frase por objeto de ejemplo: botones de la pantalla de coordenadas y su recorrido.
+export const TARGET_BLURBS = {
+  barnard: 'The star that moves fastest across our sky.',
+  epsindib: 'A pair of brown dwarfs orbiting a nearby star.',
+  wise0855: 'The coldest known brown dwarf: it visibly jumps between dates.',
+  rwaur: 'A young star whose brightness changes irregularly.',
+  rdra: 'A giant star that brightens and fades every 8 months.',
+}
+
 export const HELP = {
   // ------------------------------------------------------------------ pantalla de coordenadas
   coordsInput: {

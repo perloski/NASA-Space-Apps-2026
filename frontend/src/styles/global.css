@@ -938,3 +938,11 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
 /* Encabezados de la tabla: enlaces al glosario */
 .data-table thead th a { color: var(--muted); text-decoration: underline dotted; text-underline-offset: 3px; }
 .data-table thead th a:hover, .data-table thead th a:focus-visible { color: var(--yellow); }
+
+/* Pantalla de coordenadas: botón del recorrido y cuadros de los ejemplos con descripción */
+.tour-replay { margin-top: 40px; font-size: 16px; }
+.btn-chip::after { white-space: pre-line; width: max-content; max-width: 260px; text-align: center; line-height: 1.45; }
+.tour-items { margin: 8px 0 0 0; padding-left: 18px; color: #e8edf7; font-size: 14px; line-height: 1.55; }
+.tour-items li + li { margin-top: 3px; }
+.tour-items b { color: var(--yellow); font-weight: 600; }
+.tour-card.wide { width: min(520px, calc(100vw - 16px)); }

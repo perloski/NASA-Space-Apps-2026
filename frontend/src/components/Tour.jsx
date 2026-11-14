@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 // la explica. Se abre solo la primera vez (recordado en localStorage) y con el botón "Take the tour".
 // Accesible: diálogo con foco en "Next", Escape para salir, el foco vuelve a donde estaba.
 
+// Pasos del visor (cada pantalla puede pasar los suyos con la prop "steps")
 export const TOUR_STEPS = [
   { sel: '[data-tour="sky"]', title: 'This is the sky',
     text: 'A small patch of sky photographed by NASA’s SPHEREx telescope in infrared light. Drag to move around, scroll to zoom in and out.' },
@@ -24,17 +25,18 @@ export const TOUR_STEPS = [
     text: 'Hover any control, reach it with the Tab key, or tap its ⓘ icon to see what it does. The “Glossary” link explains every space word in simple terms.' },
 ]
 
-const STORAGE_KEY = 'openspherex.tourDone'
-export function tourAlreadySeen() {
-  try { return localStorage.getItem(STORAGE_KEY) === '1' } catch { return false }
+// Cada recorrido recuerda por separado si ya se vio (visor, pantalla de coordenadas, ...)
+export const TOUR_KEYS = { viewer: 'openspherex.tourDone', explore: 'openspherex.tourExploreDone' }
+export function tourAlreadySeen(key = TOUR_KEYS.viewer) {
+  try { return localStorage.getItem(key) === '1' } catch { return false }
 }
-function markSeen() {
-  try { localStorage.setItem(STORAGE_KEY, '1') } catch { /* modo privado, etc.: no pasa nada */ }
+function markSeen(key) {
+  try { localStorage.setItem(key, '1') } catch { /* modo privado, etc.: no pasa nada */ }
 }
 
 const PAD = 6
 
-export default function Tour({ open, onClose }) {
+export default function Tour({ open, onClose, steps: allSteps = TOUR_STEPS, storageKey = TOUR_KEYS.viewer }) {
   const [step, setStep] = useState(0)
   const [rect, setRect] = useState(null)
   const cardRef = useRef(null)
@@ -43,15 +45,15 @@ export default function Tour({ open, onClose }) {
   const [cardPos, setCardPos] = useState(null)
 
   // Pasos cuyo elemento existe ahora (p. ej. sin datos todavía no hay leyenda)
-  const steps = TOUR_STEPS.filter((s) => open && document.querySelector(s.sel))
+  const steps = allSteps.filter((s) => open && document.querySelector(s.sel))
   const cur = steps[Math.min(step, steps.length - 1)]
 
   const close = useCallback(() => {
-    markSeen()
+    markSeen(storageKey)
     onClose()
     setStep(0)
     returnFocus.current?.focus?.()
-  }, [onClose])
+  }, [onClose, storageKey])
 
   useEffect(() => {
     if (open) returnFocus.current = document.activeElement
@@ -118,7 +120,7 @@ export default function Tour({ open, onClose }) {
       {rect && <div className="tour-spot" style={rect} aria-hidden="true" />}
       <div
         ref={cardRef}
-        className="tour-card"
+        className={`tour-card${cur.items ? ' wide' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="tour-title"
@@ -136,6 +138,11 @@ export default function Tour({ open, onClose }) {
         <p className="tour-count">Step {step + 1} of {steps.length}</p>
         <h3 id="tour-title">{cur.title}</h3>
         <p id="tour-text">{cur.text}</p>
+        {cur.items && (
+          <ul className="tour-items">
+            {cur.items.map(([name, what]) => <li key={name}><b>{name}</b> — {what}</li>)}
+          </ul>
+        )}
         <div className="tour-actions">
           <button className="link" onClick={close}>Skip tour</button>
           <span style={{ flex: 1 }} />
