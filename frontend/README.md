@@ -57,6 +57,20 @@ Parámetros del visor (todos opcionales, los valores por defecto no se escriben 
 | `src/pages/*` | Pantallas: Home, Coords, Viewer, AboutSpherex, Team |
 | `src/styles/global.css` | CSS del prototipo + agregados del visor |
 
+## Accesibilidad y ayuda para no científicos
+
+| Qué | Dónde |
+|---|---|
+| Ayuda en cada control (qué hace / qué vas a ver / consejo), con mouse, teclado (Tab), toque en ⓘ y lector de pantalla | `components/WithHelp.jsx`, textos en `help.js` |
+| Leyenda "What am I looking at?" que describe en frases simples lo que hay en pantalla | `components/ViewCaption.jsx` |
+| Recorrido guiado de 8 pasos (solo la primera vez; botón "Take the tour" para repetirlo) | `components/Tour.jsx` |
+| Recetas de un clic: moverse, confirmar movimiento, objetos fríos, brillo variable | `components/Sidebar.jsx` (`RECIPES`) y `Viewer.jsx` |
+| Marca naranja sobre el objetivo y flecha hacia dónde se mueve en 10 años (datos de `/api/targets`) | `AladinView.jsx` |
+| Glosario con buscador; las ayudas enlazan a sus términos | `pages/Glossary.jsx`, textos en `glossary.js` |
+
+Todos los textos para el público están en `help.js` y `glossary.js`: revisarlos ahí y, cuando se haga la
+versión en español, traducir esos dos archivos.
+
 ## Notas
 
 - **Versiones fijas** en `package.json` (sin `^`). `aladin-lite` está en **3.8.2**, la última estable:
