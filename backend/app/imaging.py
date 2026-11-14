@@ -92,18 +92,19 @@ def quality_if_cached(frame: dict, q: Query) -> tuple[dict, float | None]:
 def reproject_many(frames: list[dict], q: Query) -> tuple[list[np.ndarray], bool]:
     """Procesa en paralelo. Los frames que fallen se saltean en vez de tirar todo el stack.
 
-    Devuelve (arrays, completo). completo=False si algún frame falló por IRSA (vale reintentar,
-    así que el resultado no se debe cachear). Si fallan todos por IRSA -> UPSTREAM_TIMEOUT.
+    Devuelve (arrays, completo). completo=False si falló CUALQUIER frame: el resultado se devuelve
+    igual pero no se cachea, así el próximo pedido reintenta los que faltan (los que sí se
+    procesaron quedan en caché y no se vuelven a bajar). Si fallan todos por IRSA -> UPSTREAM_TIMEOUT.
     """
     def one(f):
         try:
             return reprojected(f, q), False
         except ApiError as e:
             log.warning("Frame %s salteado: %s", f["id"], e.message)
-            return None, e.code == "UPSTREAM_TIMEOUT"
-        except Exception as e:  # noqa: BLE001  archivo corrupto, WCS raro, etc.: no tiene sentido reintentar
-            log.warning("Frame %s descartado: %s", f["id"], e)
-            return None, False
+            return None, True
+        except Exception as e:  # noqa: BLE001  error inesperado: mejor no cachear un stack incompleto
+            log.warning("Frame %s salteado (%s): %s", f["id"], type(e).__name__, e)
+            return None, True
 
     res = list(_pool.map(one, frames))
     arrays = [a for a, _ in res if a is not None]
