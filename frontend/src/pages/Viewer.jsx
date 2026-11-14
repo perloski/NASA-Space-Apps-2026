@@ -8,6 +8,7 @@ import Sidebar, { backgroundUrl } from '../components/Sidebar.jsx'
 import WithHelp from '../components/WithHelp.jsx'
 import ViewCaption from '../components/ViewCaption.jsx'
 import Tour, { tourAlreadySeen } from '../components/Tour.jsx'
+import { getPhot, isMeasuring, measureOnce, photKey, savePhot } from '../photCache.js'
 import { HELP } from '../help.js'
 
 // Estado del visor = parámetros de la URL (copiar el link reproduce la misma vista).
@@ -192,7 +193,47 @@ export default function Viewer() {
   const [photOpen, setPhotOpen] = useState(true) // plegar el panel sin perder los datos medidos
   const mainRef = useRef(null)
   const photRef = useRef(null)
-  useEffect(() => { setPhot({ loading: false, data: null, error: null }); setPhotOpen(true) }, [queryQs])
+  // Caché de la fotometría: al volver a esta posición/campo/detector se recupera lo medido
+  // (y cómo estaba el panel) sin volver a medir. Ver photCache.js.
+  const pKey = useMemo(() => photKey(sky?.query, s.det), [sky, s.det])
+  const pKeyRef = useRef(pKey)
+  pKeyRef.current = pKey
+  useEffect(() => {
+    const cached = getPhot(pKey)
+    if (cached?.data) {
+      setPhot({ loading: false, data: cached.data, error: null })
+      if (cached.view) setPhotView(cached.view)
+      if (cached.lcDet) setLcDet(cached.lcDet)
+      setPhotOpen(cached.open ?? true)
+    } else if (pKey && isMeasuring(pKey)) {
+      // se salió a la mitad de una medición: engancharse a ese mismo pedido
+      setPhot({ loading: true, data: null, error: null })
+      attach(pKey, measureOnce(pKey))
+    } else {
+      setPhot({ loading: false, data: null, error: null })
+      setPhotOpen(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pKey])
+  // detectores que realmente tienen mediciones (la curva de luz se grafica de a uno)
+  const photDets = useMemo(
+    () => [...new Set((phot.data?.points ?? []).map((p) => p.detector))].sort(),
+    [phot.data],
+  )
+  useEffect(() => {
+    if (photDets.length && !photDets.includes(lcDet)) setLcDet(photDets[0])
+  }, [photDets, lcDet])
+
+  // recordar cómo quedó el panel (abierto/cerrado, espectro o curva de luz, detector)
+  useEffect(() => {
+    if (phot.data) savePhot(pKey, { view: photView, lcDet, open: photOpen })
+  }, [pKey, phot.data, photView, lcDet, photOpen])
+
+  function attach(key, promise) {
+    promise
+      .then((data) => { if (pKeyRef.current === key) { setPhot({ loading: false, data, error: null }); openPhot() } })
+      .catch((e) => { if (pKeyRef.current === key) setPhot({ loading: false, data: null, error: e.message }) })
+  }
 
   function closePhot() {
     setPhotOpen(false)
@@ -209,9 +250,8 @@ export default function Viewer() {
     const p = new URLSearchParams({ ra: q.ra_deg, dec: q.dec_deg, fov_arcmin: q.fov_arcmin })
     if (s.det !== 'ALL') p.set('detectors', s.det)
     setPhot({ loading: true, data: null, error: null })
-    fetchPhotometry(p.toString())
-      .then((data) => { setPhot({ loading: false, data, error: null }); openPhot() })
-      .catch((e) => setPhot({ loading: false, data: null, error: e.message }))
+    // measureOnce guarda el resultado en la caché aunque el usuario ya se haya ido del visor
+    attach(pKey, measureOnce(pKey, () => fetchPhotometry(p.toString())))
   }
 
   const photPoints = useMemo(() => {
@@ -344,7 +384,7 @@ export default function Viewer() {
               )}
               {phot.data && photOpen && photView === 'lightcurve' && (
                 <select className="vselect" aria-label="Light curve detector" value={lcDet} onChange={(e) => setLcDet(e.target.value)}>
-                  {sky.detectors.map((d) => <option key={d.id} value={d.id}>{d.id}</option>)}
+                  {photDets.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
               )}
               {!phot.data && (

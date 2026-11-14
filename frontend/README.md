@@ -77,6 +77,7 @@ versión en español, traducir esos dos archivos.
   npm marca como `latest` una 3.9.x *beta*, no actualizar sin probar.
 - Animación (regla 4 del stack): una capa de Aladin por época/frame, precargadas; para animar
   solo cambia la opacidad. Al cambiar detector, modo o stretch se recrea la secuencia.
+- **Fotometría en caché del navegador** (`src/photCache.js`): lo medido se guarda por posición, campo y detector (últimas 20 mediciones, en localStorage). Al volver al visor, recargar o abrir el link en otra pestaña, el espectro/curva de luz aparece sin volver a medir y con el panel como se dejó. Si se sale a la mitad de una medición, sigue corriendo y el resultado se guarda; al volver se engancha a ese mismo pedido.
 - Modo `frames`: muestra hasta 40 frames del detector elegido (muestreados en el tiempo).
 - La primera vez que se pide una zona del cielo el backend baja los datos de IRSA: los stacks
   pueden tardar ~30 s y la fotometría unos minutos. Después queda en caché.
