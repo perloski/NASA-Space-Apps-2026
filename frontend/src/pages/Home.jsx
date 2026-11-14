@@ -19,6 +19,7 @@ export default function Home() {
         <button className="link anim" style={{ '--i': 14 }} onClick={() => navigate('/about')}>About SPHEREx</button>
         <button className="link anim" style={{ '--i': 15 }} onClick={() => console.log('TODO: abrir "About the challenge"')}>About The Challenge</button>
         <button className="link anim" style={{ '--i': 16 }} onClick={() => navigate('/team')}>About The Team</button>
+        <button className="link anim" style={{ '--i': 17 }} onClick={() => navigate('/glossary')}>Glossary</button>
       </nav>
     </section>
   )

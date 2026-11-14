@@ -835,3 +835,17 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
 .try-row > .help-wrap { align-self: flex-start; }
 .try-row > .help-wrap .help-icon { margin-top: 8px; }
 .phot-head .help-wrap { align-items: center; }
+
+/* ================= Glosario ================= */
+.glossary-search { margin-top: 22px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.glossary-search .vinput { max-width: 380px; font-size: 16px; padding: 9px 12px; }
+.glossary-list { margin: 0; }
+.glossary-item { scroll-margin-top: 90px; }
+.glossary-item:focus { outline: none; }
+.glossary-item h2 { font-size: 24px; margin-bottom: 6px; }
+.glossary-item .glossary-short { color: var(--yellow); font-weight: 500; }
+.glossary-item p + p { margin-top: 8px; }
+.glossary-item dd { margin: 0; }
+.glossary-example { color: var(--muted) !important; font-size: 16px !important; }
+.glossary-example b { color: var(--orange-light) !important; }
+.glossary-item.highlight { border-color: var(--yellow); box-shadow: 0 0 0 2px var(--yellow), 0 8px 24px rgba(0, 0, 0, 0.25); }

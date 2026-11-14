@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import StarField from './components/StarField.jsx'
 import AboutSpherex from './pages/AboutSpherex.jsx'
 import Coords from './pages/Coords.jsx'
+import Glossary from './pages/Glossary.jsx'
 import Home from './pages/Home.jsx'
 import Team from './pages/Team.jsx'
 
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/view" element={<Suspense fallback={null}><Viewer /></Suspense>} />
         <Route path="/about" element={<AboutSpherex />} />
         <Route path="/team" element={<Team />} />
+        <Route path="/glossary" element={<Glossary />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
