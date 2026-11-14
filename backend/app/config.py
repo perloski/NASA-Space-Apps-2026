@@ -66,3 +66,6 @@ BAD_FLAG_NAMES = [
 # Fallback si el header no trae MSKN: bits de los nombres de arriba según DR1.
 BAD_FLAG_BITS_DEFAULT = [0, 1, 2, 6, 9, 10, 11, 15, 17, 19, 22, 25, 26, 27, 28]
 HTTP_RETRIES = int(_env("HTTP_RETRIES", "6"))  # IRSA responde 503 "Server busy" seguido
+# Conexiones simultáneas a IRSA en TODO el proceso (stacks + fotometría + frames comparten el límite).
+# Con más, IRSA corta descargas a la mitad (IncompleteRead) o responde 503.
+IRSA_MAX_CONCURRENT = int(_env("IRSA_MAX_CONCURRENT", "4"))

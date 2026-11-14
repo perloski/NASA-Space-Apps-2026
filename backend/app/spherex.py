@@ -7,6 +7,7 @@ from __future__ import annotations
 import logging
 import random
 import re
+import threading
 import time
 from dataclasses import dataclass
 from functools import cached_property
@@ -226,31 +227,56 @@ def _cutout_url(access_url: str, q: Query) -> str:
 # Extensiones que guardamos en caché. EPSF (~3.8 MB por cutout) no se usa y se descarta.
 _KEEP_EXT = ("IMAGE", "FLAGS", "VARIANCE", "ZODI", "WCS-WAVE")
 _RETRY_STATUS = {429, 500, 502, 503, 504}
+_irsa_slots = threading.BoundedSemaphore(config.IRSA_MAX_CONCURRENT)
 
 
-def _http_get_fits(url: str, what: str) -> bytes:
-    """GET con reintentos y backoff: IRSA responde 503 'Server busy' de forma intermitente."""
+def _http_get_fits(url: str, what: str, validate=None) -> bytes:
+    """GET con reintentos y backoff ante los cortes intermitentes de IRSA.
+
+    Reintenta: 503 'Server busy', timeouts, conexiones caídas y descargas cortadas a la mitad
+    (IncompleteRead -> requests.ChunkedEncodingError). `validate(bytes)` se corre dentro del bucle:
+    si el archivo llegó truncado y no se puede abrir, también se reintenta.
+    """
     last = None
     for attempt in range(config.HTTP_RETRIES):
         try:
-            r = requests.get(url, timeout=config.HTTP_TIMEOUT_S)
-        except (requests.Timeout, requests.ConnectionError) as e:
-            last = e
+            with _irsa_slots:  # límite global de conexiones simultáneas a IRSA
+                r = requests.get(url, timeout=config.HTTP_TIMEOUT_S)
+        except requests.RequestException as e:
+            last = f"{type(e).__name__}: {e}"
         else:
             if r.status_code == 200 and r.content.startswith(b"SIMPLE"):
-                return r.content
-            if r.status_code not in _RETRY_STATUS:
+                if validate is None:
+                    return r.content
+                try:
+                    return validate(r.content)
+                except Exception as e:  # noqa: BLE001  FITS truncado/corrupto
+                    last = f"FITS inválido: {e}"
+            elif r.status_code not in _RETRY_STATUS and r.status_code != 200:
                 raise ApiError("INTERNAL", f"IRSA devolvió {r.status_code} para {what}: {r.text[:120]}")
-            last = f"HTTP {r.status_code}"
-        time.sleep(min(8.0, 0.5 * 2 ** attempt) + random.random() * 0.5)
-    log.warning("IRSA sin respuesta para %s tras %d intentos (%s)", what, config.HTTP_RETRIES, last)
+            else:
+                last = f"HTTP {r.status_code}"
+        if attempt < config.HTTP_RETRIES - 1:
+            log.info("Reintento %d/%d de %s (%s)", attempt + 1, config.HTTP_RETRIES - 1, what, last)
+            time.sleep(min(8.0, 0.5 * 2 ** attempt) + random.random() * 0.5)
+    log.warning("IRSA falló para %s tras %d intentos (%s)", what, config.HTTP_RETRIES, last)
     raise upstream_timeout("IRSA (cutout)")
 
 
 def _strip_extensions(raw: bytes) -> bytes:
+    """Valida el FITS y descarta las extensiones que no usamos.
+
+    astropy NO falla con un archivo truncado: descarta en silencio las extensiones incompletas.
+    Por eso se valida a mano (si falla, _http_get_fits reintenta la descarga).
+    """
     import io
 
+    if len(raw) % 2880:
+        raise ValueError(f"FITS truncado ({len(raw)} bytes, no es múltiplo de 2880)")
     with fits.open(io.BytesIO(raw), memmap=False) as hdul:
+        names = [h.name for h in hdul]
+        if "IMAGE" not in names or hdul["IMAGE"].data is None:
+            raise ValueError(f"FITS sin extensión IMAGE con datos (extensiones: {names})")
         keep = [hdul[0]] + [h for h in hdul[1:] if h.name in _KEEP_EXT]
         buf = io.BytesIO()
         fits.HDUList(keep).writeto(buf)
@@ -259,8 +285,8 @@ def _strip_extensions(raw: bytes) -> bytes:
 
 def download_cutout(frame: dict, q: Query) -> bytes:
     def build() -> bytes:
-        raw = _http_get_fits(_cutout_url(frame["access_url"], q), f"el cutout de {frame['id']}")
-        return _strip_extensions(raw)
+        return _http_get_fits(_cutout_url(frame["access_url"], q), f"el cutout de {frame['id']}",
+                              validate=_strip_extensions)
 
     return cache.cached_bytes("cutouts", f"{frame['id']}__{q.key}", "fits", build)
 
