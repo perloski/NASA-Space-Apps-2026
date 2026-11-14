@@ -145,3 +145,13 @@ def test_stack_frames_cap(monkeypatch):
     assert sel[0]["id"] == "f0" and sel[-1]["id"] == "f119"       # cubre toda la época
     assert len({f["detector"] for f in sel}) == 6                  # ALL mezcla detectores
     assert len(imaging.stack_frames(frames, "D5")) == 20            # 20 <= tope: entran todos
+
+
+def test_target_motion_arrow():
+    t = targets.get("wise0855")
+    ra, dec = targets.position(t)
+    m = targets.motion(t)
+    assert 8.0 < m["arcsec_per_year"] < 8.3          # ~8.1"/año
+    assert m["to_ra_deg"] < ra                        # se mueve hacia el oeste (RA decrece)
+    dist = ((m["to_ra_deg"] - ra) * 0.9920) ** 2 + (m["to_dec_deg"] - dec) ** 2
+    assert 75 < dist ** 0.5 * 3600 < 90               # ~81" en 10 años

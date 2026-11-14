@@ -71,6 +71,22 @@ def position(target: dict, epoch: str = config.TARGET_EPOCH) -> tuple[float, flo
     return round(float(ra[0]), 6), round(float(dec[0]), 6)
 
 
+ARROW_YEARS = 10
+
+
+def motion(target: dict, epoch: str = config.TARGET_EPOCH) -> dict:
+    """Hacia dónde se mueve el objetivo: velocidad en el cielo y su posición dentro de ARROW_YEARS
+    años (el front dibuja una flecha desde la posición actual hasta ahí)."""
+    r = target["ref"]
+    t0 = _parse_epoch(epoch)
+    t1 = Time(t0.jyear + ARROW_YEARS, format="jyear")
+    (ra, dec), = propagate(r["ra_deg"], r["dec_deg"], r["pmra_mas_yr"], r["pmdec_mas_yr"],
+                           r["parallax_mas"], _parse_epoch(r["epoch"]), [t1])
+    speed = (r["pmra_mas_yr"] ** 2 + r["pmdec_mas_yr"] ** 2) ** 0.5 / 1000.0
+    return {"arcsec_per_year": round(speed, 3), "arrow_years": ARROW_YEARS,
+            "to_ra_deg": round(float(ra[0]), 6), "to_dec_deg": round(float(dec[0]), 6)}
+
+
 def get(target_id: str) -> dict | None:
     return _BY_ID.get(target_id.lower().replace(" ", "").replace("_", ""))
 
@@ -83,6 +99,7 @@ def listing() -> dict:
             "id": t["id"], "name": t["name"], "kind": t["kind"], "description": t["description"],
             "ra_deg": ra, "dec_deg": dec, "coord_epoch": config.TARGET_EPOCH,
             "ref": t["ref"],
+            "motion": motion(t),
             "sky_url": f"/api/sky?target={t['id']}",
         })
     return {"schema_version": config.SCHEMA_VERSION, "coord_epoch": config.TARGET_EPOCH, "targets": out}
