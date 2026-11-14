@@ -56,6 +56,24 @@ export const GLOSSARY = [
     text: 'If nothing changed, everything cancels out and becomes gray. If an object moved, it leaves a black spot where it was and a white spot where it is now. If an object got brighter it looks white; fainter, black.',
   },
   {
+    id: 'frame', term: 'Frame',
+    short: 'One single photo taken by SPHEREx.',
+    text: 'Every time SPHEREx points somewhere it takes a photo with each of its six detectors; each of those photos is a frame. Frame names start with the year and week the photo was taken and end with the detector.',
+    example: '2026W39_1A_0276_1_D3 was taken in week 39 of 2026 with detector D3.',
+  },
+  {
+    id: 'mjd', term: 'MJD (Modified Julian Date)',
+    short: 'A way of writing dates as a single number of days.',
+    text: 'Instead of day, month and year, astronomers count days one after another. That makes it easy to know how much time passed between two photos: just subtract the numbers. The decimals are the time of day.',
+    example: 'MJD 61305 is 21 September 2026; MJD 61305.5 is noon that same day.',
+  },
+  {
+    id: 'uncertainty', term: 'Uncertainty (error)',
+    short: 'How much a measurement could be off.',
+    text: 'No measurement is perfect: there is always some noise. The uncertainty says how far the true value could reasonably be from the measured one. In the charts it is drawn as a small vertical line through each dot (an “error bar”).',
+    example: 'A flux of 1.52 ± 0.03 means the true value is very likely between 1.49 and 1.55.',
+  },
+  {
     id: 'stacking', term: 'Stacking',
     short: 'Adding several pictures of the same place to get a cleaner one.',
     text: 'Each single photo has some random noise, like the grain of a photo taken at night. Averaging many photos of the same spot cancels the noise and makes faint objects visible. In this viewer, each epoch is a stack of up to 24 photos.',

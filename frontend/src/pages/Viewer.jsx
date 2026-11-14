@@ -15,6 +15,16 @@ const DEFAULTS = {
   fov: 10, det: 'ALL', mode: 'blink', stretch: 'asinh', speed: 500,
   opacity: 1, bg: 'none', gaia: true, invert: false, mark: true,
 }
+// Columnas de la tabla de fotometría: [encabezado, término del glosario, qué es]
+const TABLE_COLUMNS = [
+  ['Frame', 'frame', 'Name of the single photo'],
+  ['Det', 'detector', 'Detector: infrared “color” range'],
+  ['λ (µm)', 'wavelength', 'Wavelength: the exact infrared color measured'],
+  ['MJD', 'mjd', 'Date of the photo, as astronomers count days'],
+  ['Flux', 'flux', 'Brightness of the object'],
+  ['Err', 'uncertainty', 'Uncertainty: how much the brightness could be off'],
+  ['Flag', 'flagged-pixel', 'Marked when the measurement may be affected by a known problem'],
+]
 const MIN_ARROW_SPEED = 0.5 // arcsec/año: más lento que esto la flecha no se vería
 const MAX_FRAMES = 40 // modo "frames": cada frame es una capa; más que esto satura el navegador
 
@@ -373,7 +383,18 @@ export default function Viewer() {
                   <summary>Show data table</summary>
                   <div className="data-table-wrap" tabIndex={0} aria-label="Photometry data table">
                     <table className="data-table">
-                      <thead><tr><th>Frame</th><th>Det</th><th>λ (µm)</th><th>MJD</th><th>Flux</th><th>Err</th><th>Flag</th></tr></thead>
+                      <thead>
+                        <tr>
+                          {TABLE_COLUMNS.map(([label, term, what]) => (
+                            <th key={label}>
+                              <a href={`/glossary#${term}`} target="_blank" rel="noopener"
+                                title={`${what} (opens the glossary)`} aria-label={`${label}: ${what}. Opens the glossary in a new tab.`}>
+                                {label}
+                              </a>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
                       <tbody>
                         {photPoints.map((p) => (
                           <tr key={p.frame_id}>

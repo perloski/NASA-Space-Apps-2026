@@ -934,3 +934,7 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
 .sidebar::-webkit-scrollbar-thumb, .viewer-main::-webkit-scrollbar-thumb, .data-table-wrap::-webkit-scrollbar-thumb {
   background: var(--orange); border-radius: 6px;
 }
+
+/* Encabezados de la tabla: enlaces al glosario */
+.data-table thead th a { color: var(--muted); text-decoration: underline dotted; text-underline-offset: 3px; }
+.data-table thead th a:hover, .data-table thead th a:focus-visible { color: var(--yellow); }
