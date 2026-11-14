@@ -163,3 +163,69 @@ class _quiet:
 
     def __exit__(self, *a):
         self._w.__exit__(*a)
+
+
+# ----------------------------------------------------------------------------- stretch
+
+def limits(arrays: list[np.ndarray], stretch: str) -> tuple[float, float]:
+    """Regla 3: vmin/vmax comunes a toda la secuencia (se pasa la lista de arrays de la secuencia)."""
+    vals = np.concatenate([a[np.isfinite(a)].ravel() for a in arrays]) if arrays else np.array([])
+    if vals.size == 0:
+        return 0.0, 1.0
+    if vals.size > 200_000:
+        vals = np.random.default_rng(0).choice(vals, 200_000, replace=False)
+    if stretch == "zscale":
+        vmin, vmax = ZScaleInterval().get_limits(vals)
+    else:
+        vmin, vmax = np.percentile(vals, [0.5, 99.7])
+    if not vmax > vmin:
+        vmax = vmin + 1e-6
+    return float(vmin), float(vmax)
+
+
+def apply_stretch(a: np.ndarray, vmin: float, vmax: float, stretch: str) -> np.ndarray:
+    x = np.clip((a - vmin) / (vmax - vmin), 0, 1)
+    if stretch == "asinh":
+        k = 0.1
+        x = np.arcsinh(x / k) / np.arcsinh(1 / k)
+    return x
+
+
+def to_png(a: np.ndarray, vmin: float, vmax: float, stretch: str) -> bytes:
+    """Gris + alfa (sin datos = transparente). Fila 0 del PNG = norte (se invierte el eje y de FITS)."""
+    if stretch not in STRETCHES:
+        raise bad_params(f"'stretch' debe ser uno de {', '.join(STRETCHES)}.")
+    x = apply_stretch(np.nan_to_num(a, nan=vmin), vmin, vmax, stretch)
+    gray = (x * 255).astype(np.uint8)
+    alpha = np.where(np.isfinite(a), 255, 0).astype(np.uint8)
+    img = Image.fromarray(np.flipud(np.dstack([gray, alpha])), mode="LA")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG", optimize=True)
+    return buf.getvalue()
+
+
+def diff_png(d: np.ndarray) -> bytes:
+    """Diferencia: 0 = gris medio, simétrico (blanco = más brillante en B, negro = en A)."""
+    vals = np.abs(d[np.isfinite(d)])
+    m = float(np.percentile(vals, 99.5)) if vals.size else 1.0
+    m = m or 1e-6
+    x = np.clip(0.5 + 0.5 * np.nan_to_num(d) / m, 0, 1)
+    gray = (x * 255).astype(np.uint8)
+    alpha = np.where(np.isfinite(d), 255, 0).astype(np.uint8)
+    buf = io.BytesIO()
+    Image.fromarray(np.flipud(np.dstack([gray, alpha])), mode="LA").save(buf, format="PNG", optimize=True)
+    return buf.getvalue()
+
+
+def to_fits(a: np.ndarray, q: Query, extra: dict | None = None) -> bytes:
+    h = fits.Header()
+    for k, v in grid_header(q).items():
+        if k not in ("NAXIS", "NAXIS1", "NAXIS2"):
+            h[k] = v
+    h["BUNIT"] = "MJy/sr"
+    h["ZODISUB"] = (True, "ZODI extension subtracted")
+    for k, v in (extra or {}).items():
+        h[k[:8].upper()] = v
+    buf = io.BytesIO()
+    fits.PrimaryHDU(data=a.astype(np.float32), header=h).writeto(buf)
+    return buf.getvalue()
