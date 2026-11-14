@@ -28,6 +28,13 @@ MOCK_DIR = Path(_env("SPHEREX_MOCK_DIR", str(REPO_DIR / "docs")))
 COLLECTIONS = [c.strip() for c in _env("SPHEREX_COLLECTIONS", "").split(",") if c.strip()]
 IRSA_SIA_URL = _env("IRSA_SIA_URL", "https://irsa.ipac.caltech.edu/SIA")
 
+# --- De dónde salen los cutouts ---
+# "s3": se leen directo del bucket público de AWS (rápido, sin el límite de IRSA); si falla, se usa IRSA.
+# "irsa": siempre el servicio de cutouts de IRSA (lento cuando está saturado).
+CUTOUT_SOURCE = _env("CUTOUT_SOURCE", "s3")
+S3_BASE = _env("SPHEREX_S3_BASE", "https://nasa-irsa-spherex.s3.us-east-1.amazonaws.com")
+S3_MAX_CONCURRENT = int(_env("S3_MAX_CONCURRENT", "24"))  # pedidos Range simultáneos a S3
+
 # --- Grilla común ---
 PIXEL_SCALE_ARCSEC = float(_env("PIXEL_SCALE_ARCSEC", "6.15"))  # escala nativa de SPHEREx
 FOV_DEFAULT_ARCMIN = 10.0
@@ -50,7 +57,7 @@ GAIA_ROW_LIMIT = int(_env("GAIA_ROW_LIMIT", "3000"))
 CACHE_DIR = Path(_env("SPHEREX_CACHE_DIR", str(BACKEND_DIR / "cache")))
 SIA_CACHE_TTL_S = float(_env("SIA_CACHE_TTL_S", str(12 * 3600)))  # re-consultar cada 12 h (datos nuevos)
 HTTP_TIMEOUT_S = float(_env("HTTP_TIMEOUT_S", "60"))
-DOWNLOAD_WORKERS = int(_env("DOWNLOAD_WORKERS", "6"))  # más que esto y IRSA responde 503
+DOWNLOAD_WORKERS = int(_env("DOWNLOAD_WORKERS", "12"))  # frames procesados en paralelo (IRSA tiene su propio límite)
 # margen del cutout respecto del FOV (rotación del detector: necesita >= sqrt(2))
 CUTOUT_MARGIN = 1.45
 

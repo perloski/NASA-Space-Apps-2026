@@ -285,6 +285,13 @@ def _strip_extensions(raw: bytes) -> bytes:
 
 def download_cutout(frame: dict, q: Query) -> bytes:
     def build() -> bytes:
+        if config.CUTOUT_SOURCE == "s3":
+            from . import s3cutout
+            try:
+                size_deg = q.fov_arcmin * config.CUTOUT_MARGIN / 60.0
+                return _strip_extensions(s3cutout.cutout_fits(frame, q.ra_deg, q.dec_deg, size_deg))
+            except Exception as e:  # noqa: BLE001  cualquier problema con S3 -> servicio de IRSA
+                log.info("S3 no disponible para %s (%s): uso el servicio de IRSA", frame["id"], e)
         return _http_get_fits(_cutout_url(frame["access_url"], q), f"el cutout de {frame['id']}",
                               validate=_strip_extensions)
 
