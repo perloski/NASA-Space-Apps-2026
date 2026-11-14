@@ -922,3 +922,15 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
 .recipe-btn:disabled { opacity: 0.5; cursor: wait; }
 .recipe-btn:disabled:hover { border-color: var(--line); }
 [data-tour] { scroll-margin-top: 16px; }
+
+/* Barras de desplazamiento: la barra lateral y la zona del visor usan la misma barra fina naranja
+   que la tabla de datos */
+.sidebar, .viewer-main, .data-table-wrap {
+  scrollbar-width: thin;
+  scrollbar-color: var(--orange) transparent;
+}
+.sidebar::-webkit-scrollbar, .viewer-main::-webkit-scrollbar, .data-table-wrap::-webkit-scrollbar { width: 8px; height: 8px; }
+.sidebar::-webkit-scrollbar-track, .viewer-main::-webkit-scrollbar-track, .data-table-wrap::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb, .viewer-main::-webkit-scrollbar-thumb, .data-table-wrap::-webkit-scrollbar-thumb {
+  background: var(--orange); border-radius: 6px;
+}
