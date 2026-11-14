@@ -125,6 +125,11 @@ export default function Sidebar({ s, set, sky, onGo, onDefaults, onShare, shareM
             <input type="checkbox" checked={s.gaia} onChange={(e) => set({ gaia: e.target.checked })} /> Gaia stars (blue circles)
           </label>
         </WithHelp>
+        <WithHelp help={HELP.marker}>
+          <label className="cb">
+            <input type="checkbox" checked={s.mark} onChange={(e) => set({ mark: e.target.checked })} /> Mark the target (orange)
+          </label>
+        </WithHelp>
         <WithHelp help={HELP.invert}>
           <label className="cb">
             <input type="checkbox" checked={s.invert} onChange={(e) => set({ invert: e.target.checked })} /> Invert pixel values

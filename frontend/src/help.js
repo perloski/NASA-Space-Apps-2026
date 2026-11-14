@@ -147,4 +147,11 @@ export const HELP = {
     tip: 'For the light curve, pick the detector where the object is brightest.',
   },
   // ------------------------------------------------------------------ recetas, marca, leyenda, recorrido
+  marker: {
+    title: 'Mark the target',
+    terms: ['proper-motion'],
+    does: 'Draws an orange circle around the object at the center. For objects that move fast, an arrow shows where it is heading.',
+    see: 'The arrow points to where the object will be in 10 years. The animation shows only a small part of that trip.',
+    tip: 'Turn it off to look at the object without anything covering it.',
+  },
 }

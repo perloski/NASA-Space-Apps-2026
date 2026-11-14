@@ -14,8 +14,11 @@ import A from 'aladin-lite'
 //   background           URL de un HiPS de fondo, o 'none'
 //   gaiaSources          [{ ra, dec, source_id, g_mag }] ya resueltas para la época, o null
 //   onStatus             ({ loaded, total, errors }) progreso de carga de las capas
+//   marker               { ra, dec, radiusDeg } círculo sobre el objetivo, o null
+//   arrow                { fromRa, fromDec, toRa, toDec } hacia dónde se mueve el objetivo, o null
 
 const GAIA_COLOR = '#4fc3f7'
+const MARK_COLOR = '#ff8a4c' // naranja de la marca, distinto del azul de Gaia
 // Imágenes pedidas al backend a la vez. Una zona nueva se baja por la conexión del servidor:
 // pidiendo de a 2 el total tarda lo mismo, pero la primera época aparece mucho antes.
 const MAX_IN_FLIGHT = 2
@@ -28,11 +31,12 @@ function applyLook({ layer }, i, { activeIndex, opacity, invert }) {
 
 export default function AladinView({
   ra, dec, fovArcmin, layers, wcs, activeIndex = 0, opacity = 1, invert = false,
-  background = 'none', gaiaSources = null, onStatus,
+  background = 'none', gaiaSources = null, onStatus, marker = null, arrow = null,
 }) {
   const divRef = useRef(null)
   const aladinRef = useRef(null)
   const gaiaRef = useRef(null)
+  const markRef = useRef(null)
   const imgLayersRef = useRef([])   // [{ name, layer }]
   const genRef = useRef(0)          // generación de capas: ignora callbacks de capas viejas
   const onStatusRef = useRef(onStatus)
@@ -67,6 +71,9 @@ export default function AladinView({
       })
       const gaia = A.catalog({ name: 'Gaia DR3', sourceSize: 12, color: GAIA_COLOR, shape: 'circle' })
       aladin.addCatalog(gaia)
+      const mark = A.graphicOverlay({ name: 'Target', color: MARK_COLOR, lineWidth: 2 })
+      aladin.addOverlay(mark)
+      markRef.current = mark
       aladinRef.current = aladin
       if (import.meta.env.DEV) window.__aladin = aladin // depuración desde la consola
       gaiaRef.current = gaia
@@ -80,6 +87,7 @@ export default function AladinView({
       if (aladinRef.current && divRef.current) divRef.current.innerHTML = ''
       aladinRef.current = null
       gaiaRef.current = null
+      markRef.current = null
       imgLayersRef.current = []
       setReady(false)
     }
@@ -157,6 +165,19 @@ export default function AladinView({
         A.source(s.ra, s.dec, { source_id: s.source_id, g_mag: s.g_mag })))
     }
   }, [ready, gaiaSources])
+
+  // 7) Marca del objetivo y flecha de movimiento
+  const markKey = JSON.stringify([marker, arrow])
+  useEffect(() => {
+    const mark = markRef.current
+    if (!ready || !mark) return
+    mark.removeAll()
+    if (marker) mark.add(A.circle(marker.ra, marker.dec, marker.radiusDeg, { color: MARK_COLOR, lineWidth: 2 }))
+    if (arrow) mark.add(A.vector(arrow.fromRa, arrow.fromDec, arrow.toRa, arrow.toDec, { color: MARK_COLOR, lineWidth: 2 }))
+    mark.reportChange?.()
+    aladinRef.current?.view?.requestRedraw?.()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, markKey])
 
   return (
     <>

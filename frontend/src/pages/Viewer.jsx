@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { apiUrl, diffUrl, fetchPhotometry, fetchSky, withParams } from '../api.js'
+import { apiUrl, diffUrl, fetchPhotometry, fetchSky, fetchTargets, withParams } from '../api.js'
 import AladinView from '../components/AladinView.jsx'
 import PhotometryChart from '../components/PhotometryChart.jsx'
 import PlayerControls from '../components/PlayerControls.jsx'
@@ -11,8 +11,9 @@ import { HELP } from '../help.js'
 // Estado del visor = parámetros de la URL (copiar el link reproduce la misma vista).
 const DEFAULTS = {
   fov: 10, det: 'ALL', mode: 'blink', stretch: 'asinh', speed: 500,
-  opacity: 1, bg: 'allwise', gaia: true, invert: false,
+  opacity: 1, bg: 'allwise', gaia: true, invert: false, mark: true,
 }
+const MIN_ARROW_SPEED = 0.5 // arcsec/año: más lento que esto la flecha no se vería
 const MAX_FRAMES = 40 // modo "frames": cada frame es una capa; más que esto satura el navegador
 
 function readState(sp) {
@@ -35,6 +36,7 @@ function readState(sp) {
     bg: sp.get('bg') ?? DEFAULTS.bg,
     gaia: sp.get('gaia') !== '0',
     invert: sp.get('invert') === '1',
+    mark: sp.get('mark') !== '0',
     a: sp.get('a'),
     b: sp.get('b'),
   }
@@ -88,6 +90,11 @@ export default function Viewer() {
     return () => { cancelled = true; clearTimeout(t) }
   }, [queryQs])
 
+  // ---- Objetivos del reto: tipo de objeto y hacia dónde se mueve (para la marca y la leyenda)
+  const [targetList, setTargetList] = useState(null)
+  useEffect(() => { fetchTargets().then((d) => setTargetList(d.targets)).catch(() => {}) }, [])
+  const targetInfo = s.target ? targetList?.find((t) => t.id === s.target) ?? null : null
+
   // ---- Secuencia de capas según el modo
   const effDet = s.mode === 'frames' && s.det === 'ALL' ? 'D5' : s.det
   const epochs = sky?.epochs ?? []
@@ -119,6 +126,18 @@ export default function Viewer() {
       label: e.label, epochId: e.id, sub: `${s.det} · ${e.stacks[s.det].n_frames} frames stacked`,
     }))
   }, [sky, s.mode, s.det, s.stretch, effDet, epochs, epochA, epochB])
+
+  const marker = useMemo(() => {
+    if (!s.mark || !sky) return null
+    const q = sky.query
+    return { ra: q.ra_deg, dec: q.dec_deg, radiusDeg: Math.max(15, s.fov * 60 * 0.035) / 3600 }
+  }, [s.mark, s.fov, sky])
+  const moving = (targetInfo?.motion?.arcsec_per_year ?? 0) >= MIN_ARROW_SPEED
+  const arrow = useMemo(() => {
+    if (!marker || !moving) return null
+    const m = targetInfo.motion
+    return { fromRa: marker.ra, fromDec: marker.dec, toRa: m.to_ra_deg, toDec: m.to_dec_deg }
+  }, [marker, moving, targetInfo])
 
   const seqKey = seq.map((l) => l.key).join('|')
   const [index, setIndex] = useState(0)
@@ -247,6 +266,7 @@ export default function Viewer() {
             opacity={s.opacity} invert={s.invert}
             background={s.bg === 'none' ? 'none' : backgroundUrl(s.bg)}
             gaiaSources={gaiaSources} onStatus={setLayerStatus}
+            marker={marker} arrow={arrow}
           />
           {status && <div className={`viewer-status${statusIsError ? ' error' : ''}`}>{status}</div>}
         </div>
