@@ -147,6 +147,38 @@ export const HELP = {
     tip: 'For the light curve, pick the detector where the object is brightest.',
   },
   // ------------------------------------------------------------------ recetas, marca, leyenda, recorrido
+  recipes: {
+    title: 'Quick recipes',
+    does: 'Ready-made settings for the most common things people come to do. One click changes several settings at once.',
+    see: 'The viewer reloads with the settings of the recipe. You can still change anything afterwards.',
+    tip: 'New here? “Spot something that moves” is a great first try.',
+  },
+  recipeMove: {
+    title: 'Spot something that moves',
+    terms: ['blink', 'proper-motion'],
+    does: 'Plays all the dates as an animation, using all six detectors added together for the cleanest picture.',
+    see: 'A flipbook of the sky: stars stay put and anything that moved seems to jump from one place to another.',
+    tip: 'Watch the orange circle in the center first, then look around it for anything else that jumps.',
+  },
+  recipeConfirm: {
+    title: 'Confirm the movement',
+    terms: ['difference'],
+    does: 'Subtracts the first date from the last one, the two dates that are furthest apart.',
+    see: 'A gray picture where anything that moved shows up as a black spot (where it was) next to a white spot (where it is now).',
+  },
+  recipeCold: {
+    title: 'Look for cold objects',
+    terms: ['brown-dwarf', 'infrared'],
+    does: 'Switches to detector D5, the infrared “color” where cold objects such as brown dwarfs shine the most, and uses the WISE map at a similar color as background.',
+    see: 'Ordinary stars look fainter than usual and cold objects stand out.',
+    tip: 'Something bright here that does not have a blue Gaia circle could be a brown dwarf.',
+  },
+  recipeVariable: {
+    title: 'Watch brightness change',
+    terms: ['variable-star', 'light-curve'],
+    does: 'Uses a linear brightness scale, so changes in brightness are not hidden, and prepares the light curve chart.',
+    see: 'In the animation, a variable star gets bigger and brighter or smaller and fainter. Press “Measure target flux” below to see its light curve.',
+  },
   marker: {
     title: 'Mark the target',
     terms: ['proper-motion'],

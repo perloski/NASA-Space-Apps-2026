@@ -200,6 +200,25 @@ export default function Viewer() {
     return photView === 'lightcurve' ? pts.filter((p) => p.detector === lcDet) : pts
   }, [phot.data, photView, lcDet])
 
+  // ---- Recetas (botones de la barra lateral)
+  const RECIPE_PARAMS = {
+    move: { mode: 'blink', det: 'ALL', speed: 400 },
+    confirm: { mode: 'diff', det: 'ALL', a: epochs[0]?.id, b: epochs[epochs.length - 1]?.id },
+    cold: { mode: 'blink', det: 'D5', bg: 'allwise-w2' },
+    variable: { mode: 'blink', det: 'D2', stretch: 'linear' },
+  }
+  function applyRecipe(id) {
+    // cada receta parte de los valores por defecto (no hereda la anterior): solo se conservan
+    // la posición y el campo de visión
+    setSp((cur) => {
+      const base = new URLSearchParams()
+      for (const k of ['target', 'ra', 'dec', 'fov']) if (cur.get(k)) base.set(k, cur.get(k))
+      return writeParams(base, RECIPE_PARAMS[id])
+    }, { replace: true })
+    if (id === 'variable') { setPhotView('lightcurve'); setLcDet('D2') }
+    setPlaying(true)
+  }
+
   // ---- Acciones de la barra lateral
   function onGo(text) {
     const parts = text.trim().split(/[\s,]+/).map(Number)
@@ -245,7 +264,7 @@ export default function Viewer() {
     <section id="screen-viewer" className="screen active">
       <Sidebar
         s={{ ...s, a: epochA, b: epochB, coordsText: s.coordsText || (sky ? `${sky.query.ra_deg} ${sky.query.dec_deg}` : '') }}
-        set={set} sky={sky} onGo={onGo}
+        set={set} sky={sky} onGo={onGo} onRecipe={applyRecipe}
         onDefaults={onDefaults} onShare={onShare} shareMsg={shareMsg} current={cur?.frame}
       />
 

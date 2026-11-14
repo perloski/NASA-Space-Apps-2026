@@ -21,7 +21,15 @@ const DEFAULT_DETECTORS = [
   ['D4', 2.42, 3.82], ['D5', 3.83, 4.41], ['D6', 4.42, 5.0],
 ].map(([id, min, max]) => ({ id, wavelength_um: { min, max } }))
 
-export default function Sidebar({ s, set, sky, onGo, onDefaults, onShare, shareMsg, current }) {
+// Recetas: configuraciones listas para las tareas más comunes (Viewer.applyRecipe las aplica)
+export const RECIPES = [
+  { id: 'move', emoji: '🔭', label: 'Spot something that moves', help: HELP.recipeMove },
+  { id: 'confirm', emoji: '⚫⚪', label: 'Confirm the movement', help: HELP.recipeConfirm },
+  { id: 'cold', emoji: '🧊', label: 'Look for cold objects', help: HELP.recipeCold },
+  { id: 'variable', emoji: '✨', label: 'Watch brightness change', help: HELP.recipeVariable },
+]
+
+export default function Sidebar({ s, set, sky, onGo, onDefaults, onShare, shareMsg, current, onRecipe }) {
   const [coords, setCoords] = useState(s.coordsText)
   useEffect(() => setCoords(s.coordsText), [s.coordsText])
 
@@ -30,6 +38,17 @@ export default function Sidebar({ s, set, sky, onGo, onDefaults, onShare, shareM
 
   return (
     <aside className="sidebar">
+      <div className="recipes boxed anim" style={{ '--i': 0 }}>
+        <WithHelp help={HELP.recipes}><span className="recipes-title">Quick recipes</span></WithHelp>
+        {RECIPES.map((r) => (
+          <WithHelp key={r.id} help={r.help}>
+            <button className="recipe-btn" onClick={() => onRecipe(r.id)} disabled={!sky && r.id === 'confirm'}>
+              <span className="emoji" aria-hidden="true">{r.emoji}</span>{r.label}
+            </button>
+          </WithHelp>
+        ))}
+      </div>
+
       <WithHelp help={HELP.coords} as="form" className="anim" style={{ '--i': 0 }} innerClassName="field"
         onSubmit={(e) => { e.preventDefault(); onGo(coords) }}>
         <label htmlFor="v-coords">Right ascension and declination</label>
