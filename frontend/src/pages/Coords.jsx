@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { fetchTargets } from '../api.js'
 import WithHelp from '../components/WithHelp.jsx'
 import { HELP } from '../help.js'
+import { cleanCoords } from '../coords.js'
 
 // Respaldo si el backend no responde: mismas coordenadas que el prototipo (sin movimiento propio).
 const FALLBACK = [
@@ -53,7 +54,8 @@ export default function Coords() {
         <WithHelp help={HELP.coordsInput} className="anim help-center" style={{ '--i': 1 }}>
           <input
             className="input" type="text" autoComplete="off" aria-label="Sky coordinates"
-            value={text} onChange={(e) => { setText(e.target.value); setError('') }}
+            value={text} onChange={(e) => { setText(cleanCoords(e.target.value)); setError('') }}
+            spellCheck={false}
           />
         </WithHelp>
         <p className="format-hint anim" style={{ '--i': 2 }}>

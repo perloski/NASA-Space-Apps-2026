@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { HELP } from '../help.js'
 import WithHelp from './WithHelp.jsx'
+import { cleanCoords } from '../coords.js'
 
 // Controles del visor. No guarda estado propio salvo el texto de coordenadas que se está
 // escribiendo: todo lo demás vive en la URL (lo maneja Viewer).
@@ -54,9 +55,10 @@ export default function Sidebar({ s, set, sky, onGo, onDefaults, onShare, shareM
         <label htmlFor="v-coords">Right ascension and declination</label>
         <input
           className="vinput" id="v-coords" type="text" autoComplete="off" value={coords}
-          onChange={(e) => setCoords(e.target.value)} placeholder="133.786245 -7.244373"
+          onChange={(e) => setCoords(cleanCoords(e.target.value))} placeholder="133.786245 -7.244373"
+          inputMode="text" spellCheck={false}
         />
-        <span className="hint">Decimal degrees (ICRS). Press Enter to load.</span>
+        <span className="hint">Numbers only (and + − .), in degrees. Press Enter to load.</span>
       </WithHelp>
 
       <WithHelp help={HELP.fov} className="anim" style={{ '--i': 1 }} innerClassName="field-row">
