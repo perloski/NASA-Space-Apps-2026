@@ -71,7 +71,7 @@ export default function AladinView({
         showFullscreenControl: true,
         showLayersControl: true,
       })
-      const gaia = A.catalog({ name: 'Gaia DR3', sourceSize: 12, color: GAIA_COLOR, shape: 'circle' })
+      const gaia = A.catalog({ name: 'Gaia DR3', sourceSize: 7, color: GAIA_COLOR, shape: 'circle' })
       aladin.addCatalog(gaia)
       const mark = A.graphicOverlay({ name: 'Target', color: MARK_COLOR, lineWidth: 2 })
       aladin.addOverlay(mark)
