@@ -55,7 +55,7 @@ export default function ViewCaption({ sky, mode, det, effDet, cur, index, count,
   sentences.push(targetHint(targetInfo, markerOn, moving))
 
   return (
-    <WithHelp help={HELP.caption} className="caption-help">
+    <WithHelp help={HELP.caption} className="caption-help" data-tour="caption">
       <section className="view-caption" aria-label="What am I looking at?">
         <h3>What am I looking at?</h3>
         <p>{sentences.join(' ')}</p>

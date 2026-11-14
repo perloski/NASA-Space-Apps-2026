@@ -7,6 +7,7 @@ import PlayerControls from '../components/PlayerControls.jsx'
 import Sidebar, { backgroundUrl } from '../components/Sidebar.jsx'
 import WithHelp from '../components/WithHelp.jsx'
 import ViewCaption from '../components/ViewCaption.jsx'
+import Tour, { tourAlreadySeen } from '../components/Tour.jsx'
 import { HELP } from '../help.js'
 
 // Estado del visor = parámetros de la URL (copiar el link reproduce la misma vista).
@@ -95,6 +96,14 @@ export default function Viewer() {
   const [targetList, setTargetList] = useState(null)
   useEffect(() => { fetchTargets().then((d) => setTargetList(d.targets)).catch(() => {}) }, [])
   const targetInfo = s.target ? targetList?.find((t) => t.id === s.target) ?? null : null
+
+  // ---- Recorrido guiado: solo la primera vez, cuando ya hay algo para mostrar
+  const [tourOpen, setTourOpen] = useState(false)
+  useEffect(() => {
+    if (!sky || tourAlreadySeen()) return
+    const t = setTimeout(() => setTourOpen(true), 900)
+    return () => clearTimeout(t)
+  }, [sky])
 
   // ---- Secuencia de capas según el modo
   const effDet = s.mode === 'frames' && s.det === 'ALL' ? 'D5' : s.det
@@ -278,8 +287,16 @@ export default function Viewer() {
           {`  ·  FOV ${s.fov}′  ·  ${s.mode === 'frames' ? effDet : s.det}`}
           {q?.coord_epoch ? `  ·  coords ${q.coord_epoch}` : ''}
         </p>
+        <div className="viewer-tools anim" style={{ '--i': 3 }}>
+          <WithHelp help={HELP.tour}>
+            <button className="link" onClick={() => setTourOpen(true)}>🧭 Take the tour</button>
+          </WithHelp>
+          <WithHelp help={HELP.glossary}>
+            <a className="link" href="/glossary" target="_blank" rel="noopener">📖 Glossary</a>
+          </WithHelp>
+        </div>
 
-        <div className="viewer-frame live anim" style={{ '--i': 4 }}>
+        <div className="viewer-frame live anim" style={{ '--i': 4 }} data-tour="sky">
           <AladinView
             ra={centerRa} dec={centerDec} fovArcmin={s.fov}
             layers={seq} wcs={sky?.grid.wcs} activeIndex={index}
@@ -291,7 +308,7 @@ export default function Viewer() {
           {status && <div className={`viewer-status${statusIsError ? ' error' : ''}`}>{status}</div>}
         </div>
 
-        <WithHelp help={HELP.player} className="player-help">
+        <WithHelp help={HELP.player} className="player-help" data-tour="player">
           <PlayerControls
             playing={playing} onToggle={() => setPlaying((p) => !p)} onPrev={prev} onNext={next}
             onSelect={setIndex} index={Math.min(index, Math.max(0, count - 1))} count={count}
@@ -306,7 +323,7 @@ export default function Viewer() {
         />
 
         {sky && (
-          <section className="phot-panel anim" style={{ '--i': 5 }} ref={photRef}>
+          <section className="phot-panel anim" style={{ '--i': 5 }} ref={photRef} data-tour="photometry">
             <div className="phot-head">
               <h3>{photView === 'spectrum' ? 'Spectrum' : 'Light curve'}</h3>
               {phot.data && photOpen && (
@@ -377,6 +394,7 @@ export default function Viewer() {
           </section>
         )}
       </main>
+      <Tour open={tourOpen} onClose={() => setTourOpen(false)} />
     </section>
   )
 }

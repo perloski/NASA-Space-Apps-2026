@@ -38,7 +38,7 @@ export default function Sidebar({ s, set, sky, onGo, onDefaults, onShare, shareM
 
   return (
     <aside className="sidebar">
-      <div className="recipes boxed anim" style={{ '--i': 0 }}>
+      <div className="recipes boxed anim" style={{ '--i': 0 }} data-tour="recipes">
         <WithHelp help={HELP.recipes}><span className="recipes-title">Quick recipes</span></WithHelp>
         {RECIPES.map((r) => (
           <WithHelp key={r.id} help={r.help}>
@@ -67,7 +67,7 @@ export default function Sidebar({ s, set, sky, onGo, onDefaults, onShare, shareM
         <label htmlFor="v-fov">Field of view (arcmin, max 30)</label>
       </WithHelp>
 
-      <WithHelp help={HELP.detector} className="anim" style={{ '--i': 2 }} innerClassName="field-row">
+      <WithHelp help={HELP.detector} className="anim" style={{ '--i': 2 }} innerClassName="field-row" data-tour="detector">
         <select className="vselect" id="v-det" value={s.det} onChange={(e) => set({ det: e.target.value })}>
           <option value="ALL">All (D1–D6)</option>
           {detectors.map((d) => (
@@ -79,7 +79,7 @@ export default function Sidebar({ s, set, sky, onGo, onDefaults, onShare, shareM
         <label htmlFor="v-det">Detector</label>
       </WithHelp>
 
-      <WithHelp help={HELP.mode} className="anim" style={{ '--i': 3 }} innerClassName="field-row">
+      <WithHelp help={HELP.mode} className="anim" style={{ '--i': 3 }} innerClassName="field-row" data-tour="mode">
         <select className="vselect" id="v-mode" value={s.mode} onChange={(e) => set({ mode: e.target.value })}>
           <option value="blink">Blink epochs</option>
           <option value="frames">Single frames</option>

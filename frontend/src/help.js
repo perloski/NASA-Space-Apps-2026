@@ -191,4 +191,14 @@ export const HELP = {
     does: 'A short description of what is on screen right now, updated as you change the settings or the animation advances.',
     see: 'Which date and which infrared “color” you are looking at, and what to look for.',
   },
+  tour: {
+    title: 'Guided tour',
+    does: 'A step-by-step walk through the viewer, pointing at each part and explaining what it is for.',
+    see: 'A highlighted part of the screen with a short explanation. Use “Next” and “Back” to move, or “Skip” to leave at any time.',
+  },
+  glossary: {
+    title: 'Glossary',
+    does: 'Opens a list of the space words used in this viewer, explained in simple terms.',
+    see: 'The glossary opens in a new tab, so you do not lose what you are looking at.',
+  },
 }
