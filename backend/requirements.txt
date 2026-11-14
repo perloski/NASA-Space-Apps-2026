@@ -1,0 +1,11 @@
+﻿fastapi>=0.115
+uvicorn[standard]>=0.30
+numpy>=1.26
+astropy>=6.1
+astroquery>=0.4.7
+pyvo>=1.5
+reproject>=0.13
+pillow>=10.4
+requests>=2.32
+pytest>=8.0
+httpx>=0.27
