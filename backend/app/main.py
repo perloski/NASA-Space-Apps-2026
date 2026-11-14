@@ -125,11 +125,11 @@ def get_sky(
     for e in epochs:
         stacks = {}
         for d in spherex.DETECTOR_IDS:
-            n = sum(1 for f in e["frames"] if f["detector"] == d)
+            n = len(imaging.stack_frames(e["frames"], d))  # frames que realmente entran (con tope)
             if n:
                 stacks[d] = {"image_url": f"/api/stack.png?{qs}&epoch={e['id']}&detector={d}", "n_frames": n}
         stacks["ALL"] = {"image_url": f"/api/stack.png?{qs}&epoch={e['id']}&detector=ALL",
-                         "n_frames": len(e["frames"])}
+                         "n_frames": len(imaging.stack_frames(e["frames"], "ALL"))}
         epochs_json.append({k: e[k] for k in ("id", "label", "mjd_start", "mjd_end", "mjd_mid")}
                            | {"n_frames": len(e["frames"]), "stacks": stacks})
 

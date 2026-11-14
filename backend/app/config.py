@@ -69,3 +69,6 @@ HTTP_RETRIES = int(_env("HTTP_RETRIES", "6"))  # IRSA responde 503 "Server busy"
 # Conexiones simultáneas a IRSA en TODO el proceso (stacks + fotometría + frames comparten el límite).
 # Con más, IRSA corta descargas a la mitad (IncompleteRead) o responde 503.
 IRSA_MAX_CONCURRENT = int(_env("IRSA_MAX_CONCURRENT", "4"))
+# Tope de frames por stack (repartidos en el tiempo). Acota la primera carga: en "ALL" una época
+# puede tener 120+ frames y con IRSA saturado eso son más de 10 minutos. 0 = sin tope.
+STACK_MAX_FRAMES = int(_env("STACK_MAX_FRAMES", "24"))

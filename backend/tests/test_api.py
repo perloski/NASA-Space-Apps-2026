@@ -134,3 +134,14 @@ def test_errors_have_contract_shape(client):
 def test_cors_header(client):
     r = client.get("/api/targets", headers={"Origin": "http://localhost:5173"})
     assert r.headers.get("access-control-allow-origin") in ("*", "http://localhost:5173")
+
+
+def test_stack_frames_cap(monkeypatch):
+    from app import imaging
+    monkeypatch.setattr(config, "STACK_MAX_FRAMES", 24)
+    frames = [{"id": f"f{i}", "mjd": 60000 + i, "detector": f"D{i % 6 + 1}"} for i in range(120)]
+    sel = imaging.stack_frames(frames, "ALL")
+    assert len(sel) == 24
+    assert sel[0]["id"] == "f0" and sel[-1]["id"] == "f119"       # cubre toda la época
+    assert len({f["detector"] for f in sel}) == 6                  # ALL mezcla detectores
+    assert len(imaging.stack_frames(frames, "D5")) == 20            # 20 <= tope: entran todos

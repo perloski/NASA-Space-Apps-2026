@@ -1,6 +1,7 @@
 """Reproyección a la grilla común, stacks, diferencias, stretch y PNG/FITS."""
 from __future__ import annotations
 
+import hashlib
 import io
 import logging
 from concurrent.futures import ThreadPoolExecutor
@@ -123,16 +124,29 @@ def _select(frames: list[dict], epoch_id: str | None, detector: str) -> list[dic
     return out
 
 
+def stack_frames(frames: list[dict], detector: str) -> list[dict]:
+    """Frames que entran en el stack de una época: los del detector, ordenados por fecha y, si son
+    más que STACK_MAX_FRAMES, una muestra repartida en el tiempo (en ALL quedan detectores mezclados)."""
+    sel = sorted(_select(frames, None, detector), key=lambda f: (f["mjd"], f["detector"]))
+    cap = config.STACK_MAX_FRAMES
+    if cap and len(sel) > cap:
+        idx = np.linspace(0, len(sel) - 1, cap).round().astype(int)
+        sel = [sel[i] for i in idx]
+    return sel
+
+
 def stack_array(epochs: list[dict], q: Query, epoch_id: str, detector: str,
                 op: str = "mean") -> tuple[np.ndarray, bool]:
     """-> (imagen, completo). Solo se cachea si están todos los frames."""
     ep = next((e for e in epochs if e["id"] == epoch_id), None)
     if ep is None:
         raise bad_params(f"Época '{epoch_id}' inexistente para estas coordenadas.")
-    sel = _select(ep["frames"], None, detector)
+    sel = stack_frames(ep["frames"], detector)
     if not sel:
         raise ApiError("NO_COVERAGE", f"No hay frames del detector {detector} en la época {epoch_id}.")
-    p = cache.path("stack", f"{epoch_id}_{detector}_{op}_{len(sel)}__{q.key}", "npy")
+    # la clave incluye QUÉ frames entran: si una nueva release agrega frames, el stack se rehace
+    ids = hashlib.sha1("|".join(f["id"] for f in sel).encode()).hexdigest()[:10]
+    p = cache.path("stack", f"{epoch_id}_{detector}_{op}_{len(sel)}_{ids}__{q.key}", "npy")
     if p.exists():
         return np.load(p), True
     arrs, complete = reproject_many(sel, q)
