@@ -200,3 +200,24 @@ def get_frame_fits(frame_id: str, ra: float, dec: float, fov_arcmin: float | Non
 
     data = cache.cached_bytes("fits", f"frame_{frame_id}__{q.key}", "fits", build)
     return Response(data, media_type="application/fits", headers=IMG_HEADERS)
+
+
+@app.get("/api/stack.png")
+def get_stack_png(ra: float, dec: float, epoch: str, detector: str = "ALL",
+                  fov_arcmin: float | None = None, stretch: str = "asinh",
+                  op: str = Q("mean", pattern="^(mean|median|sum)$")):
+    q = Query.make(ra, dec, fov_arcmin)
+    _check_stretch(stretch)
+    detector = _check_detector(detector)
+    if config.MOCK:
+        arrs = [mock.stack_array(q, e, detector) for e in ("E1", "E2", "E3")]
+        return _png(imaging.to_png(mock.stack_array(q, epoch, detector),
+                                   *imaging.limits(arrs, stretch), stretch))
+
+    def build() -> bytes:
+        _, _, epochs = _frames_and_epochs(q)
+        a, complete = imaging.stack_array(epochs, q, epoch, detector, op)
+        lim = imaging.stack_sequence_limits(epochs, q, detector, stretch, op)
+        return imaging.to_png(a, *lim, stretch), complete
+
+    return _png(cache.cached_bytes("png", f"stack_{epoch}_{detector}_{op}_{stretch}__{q.key}", "png", build))
