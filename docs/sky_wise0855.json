@@ -1,0 +1,990 @@
+{
+  "_mock": true,
+  "schema_version": "1.1",
+  "generated_at": "2026-11-14T12:00:00Z",
+  "query": {
+    "target_name": "WISE 0855",
+    "ra_deg": 133.786245,
+    "dec_deg": -7.24441,
+    "coord_epoch": "J2025.5",
+    "fov_arcmin": 10
+  },
+  "grid": {
+    "width_px": 98,
+    "height_px": 98,
+    "pixel_scale_arcsec": 6.15,
+    "wcs": {
+      "NAXIS": 2,
+      "NAXIS1": 98,
+      "NAXIS2": 98,
+      "WCSAXES": 2,
+      "CTYPE1": "RA---TAN",
+      "CTYPE2": "DEC--TAN",
+      "CUNIT1": "deg",
+      "CUNIT2": "deg",
+      "CRVAL1": 133.786245,
+      "CRVAL2": -7.24441,
+      "CRPIX1": 49.5,
+      "CRPIX2": 49.5,
+      "CDELT1": -0.0017083333333333334,
+      "CDELT2": 0.0017083333333333334,
+      "EQUINOX": 2000.0
+    }
+  },
+  "data_sources": [
+    {
+      "collection": "spherex_dr1",
+      "n_frames": 24
+    },
+    {
+      "collection": "spherex_qr3",
+      "n_frames": 12
+    }
+  ],
+  "detectors": [
+    {
+      "id": "D1",
+      "wavelength_um": {
+        "min": 0.75,
+        "max": 1.09
+      },
+      "n_frames": 6
+    },
+    {
+      "id": "D2",
+      "wavelength_um": {
+        "min": 1.1,
+        "max": 1.62
+      },
+      "n_frames": 6
+    },
+    {
+      "id": "D3",
+      "wavelength_um": {
+        "min": 1.63,
+        "max": 2.41
+      },
+      "n_frames": 6
+    },
+    {
+      "id": "D4",
+      "wavelength_um": {
+        "min": 2.42,
+        "max": 3.82
+      },
+      "n_frames": 6
+    },
+    {
+      "id": "D5",
+      "wavelength_um": {
+        "min": 3.83,
+        "max": 4.41
+      },
+      "n_frames": 6
+    },
+    {
+      "id": "D6",
+      "wavelength_um": {
+        "min": 4.42,
+        "max": 5.0
+      },
+      "n_frames": 6
+    }
+  ],
+  "epochs": [
+    {
+      "id": "E1",
+      "label": "May 2025",
+      "mjd_start": 60800.7,
+      "mjd_end": 60806.12,
+      "mjd_mid": 60803.41,
+      "n_frames": 12,
+      "stacks": {
+        "D1": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E1&detector=D1",
+          "n_frames": 2
+        },
+        "D2": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E1&detector=D2",
+          "n_frames": 2
+        },
+        "D3": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E1&detector=D3",
+          "n_frames": 2
+        },
+        "D4": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E1&detector=D4",
+          "n_frames": 2
+        },
+        "D5": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E1&detector=D5",
+          "n_frames": 2
+        },
+        "D6": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E1&detector=D6",
+          "n_frames": 2
+        },
+        "ALL": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E1&detector=ALL",
+          "n_frames": 12
+        }
+      }
+    },
+    {
+      "id": "E2",
+      "label": "Nov 2025",
+      "mjd_start": 60986.2,
+      "mjd_end": 60991.9,
+      "mjd_mid": 60989.05,
+      "n_frames": 12,
+      "stacks": {
+        "D1": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E2&detector=D1",
+          "n_frames": 2
+        },
+        "D2": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E2&detector=D2",
+          "n_frames": 2
+        },
+        "D3": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E2&detector=D3",
+          "n_frames": 2
+        },
+        "D4": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E2&detector=D4",
+          "n_frames": 2
+        },
+        "D5": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E2&detector=D5",
+          "n_frames": 2
+        },
+        "D6": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E2&detector=D6",
+          "n_frames": 2
+        },
+        "ALL": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E2&detector=ALL",
+          "n_frames": 12
+        }
+      }
+    },
+    {
+      "id": "E3",
+      "label": "May 2026",
+      "mjd_start": 61170.4,
+      "mjd_end": 61176.05,
+      "mjd_mid": 61173.23,
+      "n_frames": 12,
+      "stacks": {
+        "D1": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E3&detector=D1",
+          "n_frames": 2
+        },
+        "D2": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E3&detector=D2",
+          "n_frames": 2
+        },
+        "D3": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E3&detector=D3",
+          "n_frames": 2
+        },
+        "D4": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E3&detector=D4",
+          "n_frames": 2
+        },
+        "D5": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E3&detector=D5",
+          "n_frames": 2
+        },
+        "D6": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E3&detector=D6",
+          "n_frames": 2
+        },
+        "ALL": {
+          "image_url": "/api/stack.png?ra=133.786245&dec=-7.24441&fov_arcmin=10&epoch=E3&detector=ALL",
+          "n_frames": 12
+        }
+      }
+    }
+  ],
+  "epoch_strategy": "gap",
+  "frames": [
+    {
+      "id": "2025W19_1B_0100_1_D1",
+      "obs_id": "2025W19_1B_0100_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E1",
+      "detector": "D1",
+      "mjd": 60800.7,
+      "date_utc": "2025-05-05T16:48:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 0.796,
+      "image_url": "/api/frame/2025W19_1B_0100_1_D1.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W19_1B_0100_1_D1.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.038,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W19_1B_0101_1_D1",
+      "obs_id": "2025W19_1B_0101_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E1",
+      "detector": "D1",
+      "mjd": 60801.151667,
+      "date_utc": "2025-05-06T03:38:24.029Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 0.918,
+      "image_url": "/api/frame/2025W19_1B_0101_1_D1.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W19_1B_0101_1_D1.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.033,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W19_1B_0102_1_D2",
+      "obs_id": "2025W19_1B_0102_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E1",
+      "detector": "D2",
+      "mjd": 60801.603333,
+      "date_utc": "2025-05-06T14:28:47.971Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 1.149,
+      "image_url": "/api/frame/2025W19_1B_0102_1_D2.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W19_1B_0102_1_D2.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 0.62,
+        "flagged_fraction": 0.042,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W19_1B_0103_1_D2",
+      "obs_id": "2025W19_1B_0103_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E1",
+      "detector": "D2",
+      "mjd": 60802.055,
+      "date_utc": "2025-05-07T01:19:12.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 1.496,
+      "image_url": "/api/frame/2025W19_1B_0103_1_D2.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W19_1B_0103_1_D2.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 0.62,
+        "flagged_fraction": 0.022,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W19_1B_0104_1_D3",
+      "obs_id": "2025W19_1B_0104_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E1",
+      "detector": "D3",
+      "mjd": 60802.506667,
+      "date_utc": "2025-05-07T12:09:36.029Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 1.808,
+      "image_url": "/api/frame/2025W19_1B_0104_1_D3.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W19_1B_0104_1_D3.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.045,
+        "target_flagged": true
+      }
+    },
+    {
+      "id": "2025W19_1B_0105_1_D3",
+      "obs_id": "2025W19_1B_0105_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E1",
+      "detector": "D3",
+      "mjd": 60802.958333,
+      "date_utc": "2025-05-07T22:59:59.971Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 1.65,
+      "image_url": "/api/frame/2025W19_1B_0105_1_D3.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W19_1B_0105_1_D3.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.047,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W19_1B_0106_1_D4",
+      "obs_id": "2025W19_1B_0106_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E1",
+      "detector": "D4",
+      "mjd": 60803.41,
+      "date_utc": "2025-05-08T09:50:24.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 2.723,
+      "image_url": "/api/frame/2025W19_1B_0106_1_D4.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W19_1B_0106_1_D4.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.001,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W19_1B_0107_1_D4",
+      "obs_id": "2025W19_1B_0107_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E1",
+      "detector": "D4",
+      "mjd": 60803.861667,
+      "date_utc": "2025-05-08T20:40:48.029Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 3.033,
+      "image_url": "/api/frame/2025W19_1B_0107_1_D4.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W19_1B_0107_1_D4.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.012,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W19_1B_0108_1_D5",
+      "obs_id": "2025W19_1B_0108_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E1",
+      "detector": "D5",
+      "mjd": 60804.313333,
+      "date_utc": "2025-05-09T07:31:11.971Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 3.957,
+      "image_url": "/api/frame/2025W19_1B_0108_1_D5.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W19_1B_0108_1_D5.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.014,
+        "target_flagged": true
+      }
+    },
+    {
+      "id": "2025W19_1B_0109_1_D5",
+      "obs_id": "2025W19_1B_0109_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E1",
+      "detector": "D5",
+      "mjd": 60804.765,
+      "date_utc": "2025-05-09T18:21:36.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 4.316,
+      "image_url": "/api/frame/2025W19_1B_0109_1_D5.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W19_1B_0109_1_D5.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.032,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W19_1B_0110_1_D6",
+      "obs_id": "2025W19_1B_0110_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E1",
+      "detector": "D6",
+      "mjd": 60805.216667,
+      "date_utc": "2025-05-10T05:12:00.029Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 4.996,
+      "image_url": "/api/frame/2025W19_1B_0110_1_D6.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W19_1B_0110_1_D6.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.006,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W19_1B_0111_1_D6",
+      "obs_id": "2025W19_1B_0111_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E1",
+      "detector": "D6",
+      "mjd": 60805.668333,
+      "date_utc": "2025-05-10T16:02:23.971Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 4.838,
+      "image_url": "/api/frame/2025W19_1B_0111_1_D6.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W19_1B_0111_1_D6.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.047,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W45_1B_0100_1_D1",
+      "obs_id": "2025W45_1B_0100_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E2",
+      "detector": "D1",
+      "mjd": 60986.2,
+      "date_utc": "2025-11-07T04:48:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 1.032,
+      "image_url": "/api/frame/2025W45_1B_0100_1_D1.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W45_1B_0100_1_D1.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.015,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W45_1B_0101_1_D1",
+      "obs_id": "2025W45_1B_0101_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E2",
+      "detector": "D1",
+      "mjd": 60986.675,
+      "date_utc": "2025-11-07T16:12:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 1.05,
+      "image_url": "/api/frame/2025W45_1B_0101_1_D1.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W45_1B_0101_1_D1.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.025,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W45_1B_0102_1_D2",
+      "obs_id": "2025W45_1B_0102_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E2",
+      "detector": "D2",
+      "mjd": 60987.15,
+      "date_utc": "2025-11-08T03:36:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 1.118,
+      "image_url": "/api/frame/2025W45_1B_0102_1_D2.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W45_1B_0102_1_D2.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.04,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W45_1B_0103_1_D2",
+      "obs_id": "2025W45_1B_0103_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E2",
+      "detector": "D2",
+      "mjd": 60987.625,
+      "date_utc": "2025-11-08T15:00:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 1.19,
+      "image_url": "/api/frame/2025W45_1B_0103_1_D2.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W45_1B_0103_1_D2.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.035,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W45_1B_0104_1_D3",
+      "obs_id": "2025W45_1B_0104_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E2",
+      "detector": "D3",
+      "mjd": 60988.1,
+      "date_utc": "2025-11-09T02:24:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 1.922,
+      "image_url": "/api/frame/2025W45_1B_0104_1_D3.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W45_1B_0104_1_D3.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.025,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W45_1B_0105_1_D3",
+      "obs_id": "2025W45_1B_0105_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E2",
+      "detector": "D3",
+      "mjd": 60988.575,
+      "date_utc": "2025-11-09T13:48:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 2.036,
+      "image_url": "/api/frame/2025W45_1B_0105_1_D3.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W45_1B_0105_1_D3.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.024,
+        "target_flagged": true
+      }
+    },
+    {
+      "id": "2025W46_1B_0106_1_D4",
+      "obs_id": "2025W46_1B_0106_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E2",
+      "detector": "D4",
+      "mjd": 60989.05,
+      "date_utc": "2025-11-10T01:12:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 2.481,
+      "image_url": "/api/frame/2025W46_1B_0106_1_D4.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W46_1B_0106_1_D4.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.049,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W46_1B_0107_1_D4",
+      "obs_id": "2025W46_1B_0107_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E2",
+      "detector": "D4",
+      "mjd": 60989.525,
+      "date_utc": "2025-11-10T12:36:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 2.971,
+      "image_url": "/api/frame/2025W46_1B_0107_1_D4.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W46_1B_0107_1_D4.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.025,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W46_1B_0108_1_D5",
+      "obs_id": "2025W46_1B_0108_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E2",
+      "detector": "D5",
+      "mjd": 60990.0,
+      "date_utc": "2025-11-11T00:00:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 4.277,
+      "image_url": "/api/frame/2025W46_1B_0108_1_D5.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W46_1B_0108_1_D5.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.043,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W46_1B_0109_1_D5",
+      "obs_id": "2025W46_1B_0109_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E2",
+      "detector": "D5",
+      "mjd": 60990.475,
+      "date_utc": "2025-11-11T11:24:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 4.128,
+      "image_url": "/api/frame/2025W46_1B_0109_1_D5.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W46_1B_0109_1_D5.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.029,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2025W46_1B_0110_1_D6",
+      "obs_id": "2025W46_1B_0110_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E2",
+      "detector": "D6",
+      "mjd": 60990.95,
+      "date_utc": "2025-11-11T22:48:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 4.576,
+      "image_url": "/api/frame/2025W46_1B_0110_1_D6.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W46_1B_0110_1_D6.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.048,
+        "target_flagged": true
+      }
+    },
+    {
+      "id": "2025W46_1B_0111_1_D6",
+      "obs_id": "2025W46_1B_0111_1",
+      "collection": "spherex_dr1",
+      "epoch_id": "E2",
+      "detector": "D6",
+      "mjd": 60991.425,
+      "date_utc": "2025-11-12T10:12:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 4.875,
+      "image_url": "/api/frame/2025W46_1B_0111_1_D6.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2025W46_1B_0111_1_D6.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.044,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2026W19_1B_0100_1_D1",
+      "obs_id": "2026W19_1B_0100_1",
+      "collection": "spherex_qr3",
+      "epoch_id": "E3",
+      "detector": "D1",
+      "mjd": 61170.4,
+      "date_utc": "2026-05-10T09:36:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 1.025,
+      "image_url": "/api/frame/2026W19_1B_0100_1_D1.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2026W19_1B_0100_1_D1.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.028,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2026W19_1B_0101_1_D1",
+      "obs_id": "2026W19_1B_0101_1",
+      "collection": "spherex_qr3",
+      "epoch_id": "E3",
+      "detector": "D1",
+      "mjd": 61170.870833,
+      "date_utc": "2026-05-10T20:53:59.971Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 0.769,
+      "image_url": "/api/frame/2026W19_1B_0101_1_D1.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2026W19_1B_0101_1_D1.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.028,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2026W20_1B_0102_1_D2",
+      "obs_id": "2026W20_1B_0102_1",
+      "collection": "spherex_qr3",
+      "epoch_id": "E3",
+      "detector": "D2",
+      "mjd": 61171.341667,
+      "date_utc": "2026-05-11T08:12:00.029Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 1.362,
+      "image_url": "/api/frame/2026W20_1B_0102_1_D2.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2026W20_1B_0102_1_D2.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.018,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2026W20_1B_0103_1_D2",
+      "obs_id": "2026W20_1B_0103_1",
+      "collection": "spherex_qr3",
+      "epoch_id": "E3",
+      "detector": "D2",
+      "mjd": 61171.8125,
+      "date_utc": "2026-05-11T19:30:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 1.38,
+      "image_url": "/api/frame/2026W20_1B_0103_1_D2.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2026W20_1B_0103_1_D2.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.031,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2026W20_1B_0104_1_D3",
+      "obs_id": "2026W20_1B_0104_1",
+      "collection": "spherex_qr3",
+      "epoch_id": "E3",
+      "detector": "D3",
+      "mjd": 61172.283333,
+      "date_utc": "2026-05-12T06:47:59.971Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 1.652,
+      "image_url": "/api/frame/2026W20_1B_0104_1_D3.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2026W20_1B_0104_1_D3.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.009,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2026W20_1B_0105_1_D3",
+      "obs_id": "2026W20_1B_0105_1",
+      "collection": "spherex_qr3",
+      "epoch_id": "E3",
+      "detector": "D3",
+      "mjd": 61172.754167,
+      "date_utc": "2026-05-12T18:06:00.029Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 2.302,
+      "image_url": "/api/frame/2026W20_1B_0105_1_D3.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2026W20_1B_0105_1_D3.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.04,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2026W20_1B_0106_1_D4",
+      "obs_id": "2026W20_1B_0106_1",
+      "collection": "spherex_qr3",
+      "epoch_id": "E3",
+      "detector": "D4",
+      "mjd": 61173.225,
+      "date_utc": "2026-05-13T05:24:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 2.777,
+      "image_url": "/api/frame/2026W20_1B_0106_1_D4.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2026W20_1B_0106_1_D4.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.034,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2026W20_1B_0107_1_D4",
+      "obs_id": "2026W20_1B_0107_1",
+      "collection": "spherex_qr3",
+      "epoch_id": "E3",
+      "detector": "D4",
+      "mjd": 61173.695833,
+      "date_utc": "2026-05-13T16:41:59.971Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 2.443,
+      "image_url": "/api/frame/2026W20_1B_0107_1_D4.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2026W20_1B_0107_1_D4.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 0.62,
+        "flagged_fraction": 0.038,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2026W20_1B_0108_1_D5",
+      "obs_id": "2026W20_1B_0108_1",
+      "collection": "spherex_qr3",
+      "epoch_id": "E3",
+      "detector": "D5",
+      "mjd": 61174.166667,
+      "date_utc": "2026-05-14T04:00:00.029Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 3.894,
+      "image_url": "/api/frame/2026W20_1B_0108_1_D5.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2026W20_1B_0108_1_D5.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.017,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2026W20_1B_0109_1_D5",
+      "obs_id": "2026W20_1B_0109_1",
+      "collection": "spherex_qr3",
+      "epoch_id": "E3",
+      "detector": "D5",
+      "mjd": 61174.6375,
+      "date_utc": "2026-05-14T15:18:00.000Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 3.923,
+      "image_url": "/api/frame/2026W20_1B_0109_1_D5.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2026W20_1B_0109_1_D5.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.008,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2026W20_1B_0110_1_D6",
+      "obs_id": "2026W20_1B_0110_1",
+      "collection": "spherex_qr3",
+      "epoch_id": "E3",
+      "detector": "D6",
+      "mjd": 61175.108333,
+      "date_utc": "2026-05-15T02:35:59.971Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 4.833,
+      "image_url": "/api/frame/2026W20_1B_0110_1_D6.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2026W20_1B_0110_1_D6.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.016,
+        "target_flagged": false
+      }
+    },
+    {
+      "id": "2026W20_1B_0111_1_D6",
+      "obs_id": "2026W20_1B_0111_1",
+      "collection": "spherex_qr3",
+      "epoch_id": "E3",
+      "detector": "D6",
+      "mjd": 61175.579167,
+      "date_utc": "2026-05-15T13:54:00.029Z",
+      "exptime_s": 113.58,
+      "wavelength_at_target_um": 4.434,
+      "image_url": "/api/frame/2026W20_1B_0111_1_D6.png?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "fits_url": "/api/frame/2026W20_1B_0111_1_D6.fits?ra=133.786245&dec=-7.24441&fov_arcmin=10",
+      "quality": {
+        "coverage": 1.0,
+        "flagged_fraction": 0.021,
+        "target_flagged": false
+      }
+    }
+  ],
+  "overlays": {
+    "gaia": {
+      "catalog": "gaiadr3",
+      "ref_epoch": "J2016.0",
+      "mag_limit_g": 20,
+      "sources": [
+        {
+          "source_id": "3108266213034211584",
+          "ra_deg": 133.845061,
+          "dec_deg": -7.184304,
+          "g_mag": 17.63,
+          "pmra_mas_yr": 0.61,
+          "pmdec_mas_yr": -17.45,
+          "parallax_mas": 2.47,
+          "pos_by_epoch": {
+            "E1": {
+              "ra_deg": 133.8450627,
+              "dec_deg": -7.1843493
+            },
+            "E2": {
+              "ra_deg": 133.8450628,
+              "dec_deg": -7.1843517
+            },
+            "E3": {
+              "ra_deg": 133.8450629,
+              "dec_deg": -7.1843542
+            }
+          }
+        },
+        {
+          "source_id": "3108266213034219503",
+          "ra_deg": 133.858282,
+          "dec_deg": -7.316891,
+          "g_mag": 14.96,
+          "pmra_mas_yr": -21.21,
+          "pmdec_mas_yr": 13.13,
+          "parallax_mas": 2.14,
+          "pos_by_epoch": {
+            "E1": {
+              "ra_deg": 133.8582265,
+              "dec_deg": -7.3168569
+            },
+            "E2": {
+              "ra_deg": 133.8582234,
+              "dec_deg": -7.3168551
+            },
+            "E3": {
+              "ra_deg": 133.8582205,
+              "dec_deg": -7.3168532
+            }
+          }
+        },
+        {
+          "source_id": "3108266213034227422",
+          "ra_deg": 133.759459,
+          "dec_deg": -7.23769,
+          "g_mag": 18.79,
+          "pmra_mas_yr": -16.76,
+          "pmdec_mas_yr": 28.54,
+          "parallax_mas": 1.6,
+          "pos_by_epoch": {
+            "E1": {
+              "ra_deg": 133.7594154,
+              "dec_deg": -7.2376157
+            },
+            "E2": {
+              "ra_deg": 133.759413,
+              "dec_deg": -7.2376116
+            },
+            "E3": {
+              "ra_deg": 133.7594106,
+              "dec_deg": -7.2376076
+            }
+          }
+        },
+        {
+          "source_id": "3108266213034235341",
+          "ra_deg": 133.827858,
+          "dec_deg": -7.222085,
+          "g_mag": 15.93,
+          "pmra_mas_yr": -6.31,
+          "pmdec_mas_yr": 4.55,
+          "parallax_mas": 1.93,
+          "pos_by_epoch": {
+            "E1": {
+              "ra_deg": 133.8278414,
+              "dec_deg": -7.2220727
+            },
+            "E2": {
+              "ra_deg": 133.8278405,
+              "dec_deg": -7.2220721
+            },
+            "E3": {
+              "ra_deg": 133.8278396,
+              "dec_deg": -7.2220714
+            }
+          }
+        },
+        {
+          "source_id": "3108266213034243260",
+          "ra_deg": 133.852574,
+          "dec_deg": -7.274686,
+          "g_mag": 15.84,
+          "pmra_mas_yr": 28.07,
+          "pmdec_mas_yr": 22.53,
+          "parallax_mas": 2.59,
+          "pos_by_epoch": {
+            "E1": {
+              "ra_deg": 133.8526478,
+              "dec_deg": -7.2746277
+            },
+            "E2": {
+              "ra_deg": 133.8526518,
+              "dec_deg": -7.2746245
+            },
+            "E3": {
+              "ra_deg": 133.8526558,
+              "dec_deg": -7.2746214
+            }
+          }
+        }
+      ]
+    }
+  },
+  "render_defaults": {
+    "stretch": "asinh",
+    "units": "MJy/sr",
+    "zodi_subtracted": true
+  }
+}
