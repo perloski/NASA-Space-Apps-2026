@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { GLOSSARY_BY_ID } from '../glossary.js'
 
 // Envuelve un control y muestra su explicación (textos en src/help.js).
 //
@@ -139,6 +140,18 @@ export default function WithHelp({ help, as: Tag = 'div', className = '', style,
           <p className="help-label">What you will see</p>
           <p>{help.see}</p>
           {help.tip && <p className="help-tipline"><span aria-hidden="true">💡 </span>{help.tip}</p>}
+          {help.terms?.length > 0 && (
+            <p className="help-terms">
+              Learn more:{' '}
+              {help.terms.map((t, i) => (
+                <span key={t}>
+                  {i > 0 && ' · '}
+                  {/* tabIndex -1: la ayuda visual es aria-hidden; el glosario también está enlazado en la página */}
+                  <a href={`/glossary#${t}`} target="_blank" rel="noopener" tabIndex={-1}>{GLOSSARY_BY_ID[t]?.term ?? t}</a>
+                </span>
+              ))}
+            </p>
+          )}
         </div>,
         document.body,
       )}
