@@ -242,3 +242,20 @@ def get_diff_png(ra: float, dec: float, a: str, b: str, detector: str = "ALL",
         return imaging.diff_png(sb - sa), ok_a and ok_b
 
     return _png(cache.cached_bytes("png", f"diff_{a}_{b}_{detector}__{q.key}", "png", build))
+
+
+@app.get("/api/photometry")
+def get_photometry(ra: float | None = None, dec: float | None = None, fov_arcmin: float | None = None,
+                   target: str | None = None, detectors: str | None = None,
+                   aperture_px: float = Q(2.0, gt=0, le=10)):
+    q, _, _ = _resolve(ra, dec, fov_arcmin, target)
+    dets = _parse_detectors(detectors)
+    if config.MOCK:
+        return mock.photometry(q, aperture_px)
+    frames, _, _ = _frames_and_epochs(q, dets)
+    return {
+        "schema_version": config.SCHEMA_VERSION,
+        "query": {"ra_deg": q.ra_deg, "dec_deg": q.dec_deg, "aperture_px": aperture_px},
+        "flux_units": "MJy/sr",
+        "points": photometry.photometry(frames, q, aperture_px),
+    }
