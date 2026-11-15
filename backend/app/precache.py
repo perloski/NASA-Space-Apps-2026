@@ -52,7 +52,10 @@ def main() -> None:
     ap.add_argument("--photometry", action="store_true")
     a = ap.parse_args()
     for tid in a.targets:
-        warm(tid, a.fov, a.frames, a.photometry)
+        try:
+            warm(tid, a.fov, a.frames, a.photometry)
+        except ApiError as err:  # p. ej. IRSA caído: seguir con el próximo objetivo
+            print(f"[{tid}] falló: {err.code} {err.message}")
 
 
 if __name__ == "__main__":
