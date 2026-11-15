@@ -747,15 +747,34 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
   animation: spin 1.2s linear infinite reverse; /* antihorario: hacia donde mira el gato */
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-/* Gatito grande sobre la esquina superior derecha del visor, por fuera del borde */
-.viewer-frame .frame-loader {
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: none; } /* el gatito queda quieto */
+}
+/* El recuadro del visor va envuelto en un contenedor SIN overflow: hidden, para que el gatito de
+   carga pueda quedar afuera, a la izquierda, centrado verticalmente con el recuadro. */
+.viewer-frame-wrap {
+  position: relative;
+  width: var(--frame);
+  margin-top: 14px;
+}
+.viewer-frame-wrap > .viewer-frame { width: 100%; margin-top: 0; }
+.frame-loader.spinner {
   position: absolute;
-  right: 0;
-  bottom: calc(100% + 4px);
-  width: 72px; height: 72px;
+  right: calc(100% + 24px);
+  top: 50%;
+  /* `translate` (no `transform`): así no lo pisa la animación de giro, que usa transform */
+  translate: 0 -50%;
+  width: 56px; height: 56px;
   margin: 0;
-  z-index: 25;
   pointer-events: none;
+}
+/* Sin lugar a la izquierda (pantallas angostas): adentro, esquina superior izquierda, sobre Aladin */
+.viewer-frame-wrap.loader-inside .frame-loader.spinner {
+  right: auto;
+  left: 12px;
+  top: 12px;
+  translate: none;
+  z-index: 30;
 }
 
 /* Reproductor de épocas */

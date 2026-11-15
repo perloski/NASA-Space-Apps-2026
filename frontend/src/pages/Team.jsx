@@ -5,12 +5,16 @@ import gatoEmi from '../images/Gatos-presentacion-Emi.png'
 import gatoLaza from '../images/Gatos-presentacion-Laza.png'
 import gatoPerla from '../images/Gatos-presentacion-Perla.png'
 import gatoAlma from '../images/Gatos-presentacion.png'
+import fotoEmiliano from '../images/emiliano.jpeg'
+import fotoLazaro from '../images/lazaro.jpeg'
+import fotoAlma from '../images/alma.jpeg'
+import fotoPerla from '../images/perla.jpeg'
 
 const TEAM = [
-  { name: 'Emiliano', role: 'roleBackend', cat: gatoEmi },
-  { name: 'Lazaro', role: 'roleBackend', cat: gatoLaza },
-  { name: 'Alma', role: 'roleDesigner', cat: gatoAlma },
-  { name: 'Perla', role: 'roleFrontend', cat: gatoPerla },
+  { name: 'Emiliano', role: 'roleBackend', cat: gatoEmi, photo: fotoEmiliano },
+  { name: 'Lazaro', role: 'roleBackend', cat: gatoLaza, photo: fotoLazaro },
+  { name: 'Alma', role: 'roleDesigner', cat: gatoAlma, photo: fotoAlma },
+  { name: 'Perla', role: 'roleFrontend', cat: gatoPerla, photo: fotoPerla },
 ]
 
 export default function Team() {
@@ -31,7 +35,7 @@ export default function Team() {
         <div className="team-grid">
           {TEAM.map((p, i) => (
             <article key={p.name} className="team-card anim" style={{ '--i': 2 + i }}>
-              <div className="avatar" aria-hidden="true">{p.name[0]}</div>
+              <div className="avatar"><img src={p.photo} alt={p.name} loading="lazy" /></div>
               <div className="team-card-info">
                 <h2 className="member-name">{p.name}</h2>
                 <p className="member-role">{t(`ui.${p.role}`)}</p>

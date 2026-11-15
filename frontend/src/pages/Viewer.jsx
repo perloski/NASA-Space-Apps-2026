@@ -23,6 +23,7 @@ const TABLE_COLUMNS = [
   ['colFlux', 'flux'], ['colErr', 'uncertainty'], ['colFlag', 'flagged-pixel'],
 ]
 const MIN_ARROW_SPEED = 0.5 // arcsec/año: más lento que esto la flecha no se vería
+const LOADER_SPACE = 56 + 24 // ancho del gatito de carga + separación con el recuadro
 const MAX_FRAMES = 40 // modo "frames": cada frame es una capa; más que esto satura el navegador
 
 function readState(sp) {
@@ -302,6 +303,21 @@ export default function Viewer() {
     setTimeout(() => setShareMsg(''), 2000)
   }
 
+  // ¿Entra el gatito de carga a la izquierda del recuadro? (56px + 24px de separación). Si no
+  // (pantallas angostas), va adentro, en la esquina superior izquierda.
+  const frameWrapRef = useRef(null)
+  const [loaderInside, setLoaderInside] = useState(false)
+  useEffect(() => {
+    const wrap = frameWrapRef.current
+    if (!wrap || typeof ResizeObserver === 'undefined') return
+    const check = () => setLoaderInside(wrap.offsetLeft < LOADER_SPACE)
+    const ro = new ResizeObserver(check)
+    ro.observe(wrap)
+    if (wrap.offsetParent) ro.observe(wrap.offsetParent)
+    check()
+    return () => ro.disconnect()
+  }, [])
+
   // ---- Render
   const q = sky?.query
   const title = q?.target_name
@@ -353,6 +369,8 @@ export default function Viewer() {
           </WithHelp>
         </div>
 
+        {/* Contenedor sin overflow: el gatito de carga va afuera del recuadro, a su izquierda */}
+        <div className={`viewer-frame-wrap${loaderInside ? ' loader-inside' : ''}`} ref={frameWrapRef}>
         <div className="viewer-frame live anim" style={{ '--i': 4 }} data-tour="sky">
           <AladinView
             ra={centerRa} dec={centerDec} fovArcmin={s.fov}
@@ -363,6 +381,7 @@ export default function Viewer() {
             marker={marker} arrow={arrow}
           />
           {status && <div className={`viewer-status${statusIsError ? ' error' : ''}`}>{status}</div>}
+        </div>
           {viewerLoading && <div className="frame-loader spinner" role="status" aria-label={status} />}
         </div>
 
