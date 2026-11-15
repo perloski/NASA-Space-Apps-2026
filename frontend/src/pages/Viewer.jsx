@@ -7,7 +7,7 @@ import PlayerControls from '../components/PlayerControls.jsx'
 import Sidebar, { backgroundUrl } from '../components/Sidebar.jsx'
 import WithHelp from '../components/WithHelp.jsx'
 import ViewCaption from '../components/ViewCaption.jsx'
-import Tour, { VIEWER_TOUR, tourAlreadySeen } from '../components/Tour.jsx'
+import Tour, { TOUR_KEYS, VIEWER_TOUR, tourAlreadySeen } from '../components/Tour.jsx'
 import { getPhot, isMeasuring, measureOnce, photKey, savePhot } from '../photCache.js'
 import { dateTimeLabel, monthLabel, useI18n, withLang } from '../i18n/index.jsx'
 import LanguageSelect from '../components/LanguageSelect.jsx'
@@ -106,13 +106,13 @@ export default function Viewer() {
   useEffect(() => { fetchTargets().then((d) => setTargetList(d.targets)).catch(() => {}) }, [])
   const targetInfo = s.target ? targetList?.find((t) => t.id === s.target) ?? null : null
 
-  // ---- Recorrido guiado: solo la primera vez, cuando ya hay algo para mostrar
+  // ---- Recorrido guiado: la primera vez en cada idioma, cuando ya hay algo para mostrar
   const [tourOpen, setTourOpen] = useState(false)
   useEffect(() => {
-    if (!sky || tourAlreadySeen()) return
+    if (!sky || tourAlreadySeen(TOUR_KEYS.viewer, lang)) return
     const t = setTimeout(() => setTourOpen(true), 900)
     return () => clearTimeout(t)
-  }, [sky])
+  }, [sky, lang])
 
   // ---- Secuencia de capas según el modo
   const effDet = s.mode === 'frames' && s.det === 'ALL' ? 'D5' : s.det

@@ -19,7 +19,7 @@ const fmtSigned = (v) => (v >= 0 ? '+' : '') + v
 
 export default function Coords() {
   const navigate = useNavigate()
-  const { t, m } = useI18n()
+  const { t, m, lang } = useI18n()
   const [text, setText] = useState('')
   const [error, setError] = useState(false)
   const [targets, setTargets] = useState(FALLBACK)
@@ -33,12 +33,12 @@ export default function Coords() {
       .catch(() => { /* se quedan los de respaldo */ })
   }, [])
 
-  // el recorrido se abre solo la primera vez (después de la animación de entrada)
+  // el recorrido se abre solo la primera vez en cada idioma (después de la animación de entrada)
   useEffect(() => {
-    if (tourAlreadySeen(TOUR_KEYS.explore)) return
+    if (tourAlreadySeen(TOUR_KEYS.explore, lang)) return
     const tm = setTimeout(() => setTourOpen(true), 1200)
     return () => clearTimeout(tm)
-  }, [])
+  }, [lang])
 
   // Recorrido de esta pantalla: para qué sirve el campo y qué son los botones de ejemplo
   const steps = useMemo(() => {

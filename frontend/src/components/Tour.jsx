@@ -18,20 +18,21 @@ export const VIEWER_TOUR = [
   { id: 'help', sel: '.sidebar .help-icon' },
 ]
 
-// Cada recorrido recuerda por separado si ya se vio (visor, pantalla de coordenadas, ...)
+// Cada recorrido recuerda por separado si ya se vio (visor, pantalla de coordenadas, ...), y
+// también por idioma: quien lo vio en inglés y entra en español lo ve una vez más, en español.
 export const TOUR_KEYS = { viewer: 'openspherex.tourDone', explore: 'openspherex.tourExploreDone' }
-export function tourAlreadySeen(key = TOUR_KEYS.viewer) {
-  try { return localStorage.getItem(key) === '1' } catch { return false }
+export function tourAlreadySeen(key, lang) {
+  try { return localStorage.getItem(`${key}.${lang}`) === '1' } catch { return false }
 }
-function markSeen(key) {
-  try { localStorage.setItem(key, '1') } catch { /* modo privado, etc.: no pasa nada */ }
+function markSeen(key, lang) {
+  try { localStorage.setItem(`${key}.${lang}`, '1') } catch { /* modo privado, etc.: no pasa nada */ }
 }
 
 const PAD = 6
 
 // steps: [{ sel, title, text, items? }] ya traducidos por quien abre el recorrido
 export default function Tour({ open, onClose, steps: allSteps, storageKey = TOUR_KEYS.viewer }) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const [step, setStep] = useState(0)
   const [rect, setRect] = useState(null)
   const cardRef = useRef(null)
@@ -47,11 +48,11 @@ export default function Tour({ open, onClose, steps: allSteps, storageKey = TOUR
   const curSel = cur?.sel
 
   const close = useCallback(() => {
-    markSeen(storageKey)
+    markSeen(storageKey, lang)
     onClose()
     setStep(0)
     returnFocus.current?.focus?.()
-  }, [onClose, storageKey])
+  }, [onClose, storageKey, lang])
 
   useEffect(() => {
     if (open) returnFocus.current = document.activeElement
