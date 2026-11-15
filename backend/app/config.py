@@ -52,6 +52,9 @@ EPOCH_BIN_DAYS = 30.0
 GAIA_TABLE = "gaiadr3.gaia_source"
 GAIA_MAG_LIMIT = float(_env("GAIA_MAG_LIMIT", "20"))
 GAIA_ROW_LIMIT = int(_env("GAIA_ROW_LIMIT", "3000"))
+# Proporción máxima ancho/alto del visor del frontend (el recorte de SPHEREx es cuadrado y ocupa el
+# alto; a los costados se ve el cielo alrededor). Define cuánto cielo cubre la consulta a Gaia.
+VIEW_ASPECT = float(_env("VIEW_ASPECT", "1.6"))
 
 # --- Red / caché ---
 CACHE_DIR = Path(_env("SPHEREX_CACHE_DIR", str(BACKEND_DIR / "cache")))

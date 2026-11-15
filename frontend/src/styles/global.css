@@ -391,7 +391,13 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
      no llega. Los márgenes automáticos (abajo) centran cuando entra y no cortan cuando crece. */
   justify-content: flex-start;
   gap: 6px;
-  padding: 76px 24px 24px;
+  padding: 70px 24px 24px;
+  /* Tamaño del visor de Aladin: de alto, casi todo lo disponible (lo que dejan el título y los
+     controles) con un mínimo legible; de ancho, hasta 1,6 veces el alto (= VIEW_ASPECT del backend)
+     sin pasarse del espacio. --frame es el ancho: lo usan el visor y el reproductor. */
+  --frame-h: max(380px, calc(100vh - 210px));
+  --frame: min(100%, calc(var(--frame-h) * 1.6));
+  container-type: inline-size;
   overflow: auto;
 }
 
@@ -407,8 +413,9 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
 
 .viewer-frame {
   margin-top: 14px;
-  width: min(100%, 62vh, 560px);
-  aspect-ratio: 1 / 1;
+  width: var(--frame);
+  /* en pantallas angostas (celular) queda cuadrado: nunca más alto que ancho */
+  height: min(var(--frame-h), 100cqw);
   border: 2px dashed var(--orange);
   border-radius: 6px;
   background: rgba(3, 6, 14, 0.7);
@@ -691,7 +698,7 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
 
 /* Reproductor de épocas */
 .player {
-  width: min(100%, 62vh, 560px);
+  width: var(--frame);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -826,7 +833,7 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
 }
 
 /* Envoltorios de ayuda en lugares puntuales */
-.player-help { width: min(100%, 62vh, 560px); }
+.player-help { width: var(--frame); }
 .player-help .player { width: 100%; }
 .player-help > :first-child > div { width: 100% !important; }
 /* el ícono no debe correr el campo centrado de la pantalla de coordenadas */

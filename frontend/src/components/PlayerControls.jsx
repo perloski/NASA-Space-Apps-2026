@@ -5,7 +5,7 @@ export default function PlayerControls({ playing, onToggle, onPrev, onNext, onSe
   const { t } = useI18n()
   const disabled = count < 2
   return (
-    <div style={{ width: 'min(100%, 62vh, 560px)' }}>
+    <div style={{ width: 'var(--frame)' }}>
       <div className="player">
         <button className="btn" onClick={onPrev} disabled={disabled} aria-label={t('ui.previous')}>◀</button>
         <button className="btn" onClick={onToggle} disabled={disabled} aria-label={playing ? t('ui.pauseAria') : t('ui.playAria')}>

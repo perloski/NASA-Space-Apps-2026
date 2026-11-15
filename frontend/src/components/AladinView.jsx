@@ -99,12 +99,23 @@ export default function AladinView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // 2) Centro y campo
+  // 2) Centro y campo. El recorte de SPHEREx es cuadrado y el visor puede ser más ancho que alto:
+  // Aladin mide el campo a lo ancho, así que se agranda en esa proporción para que el recorte
+  // ocupe todo el alto y a los costados se vea el cielo de alrededor. Se recalcula al redimensionar.
   useEffect(() => {
     const aladin = aladinRef.current
-    if (!ready || !aladin) return
+    const el = divRef.current
+    if (!ready || !aladin || !el) return
     aladin.gotoRaDec(ra, dec)
-    aladin.setFoV(fovArcmin / 60)
+    const fit = () => {
+      const { width, height } = el.getBoundingClientRect()
+      const aspect = width > 0 && height > 0 ? Math.max(1, width / height) : 1
+      aladin.setFoV((fovArcmin / 60) * aspect)
+    }
+    fit()
+    const ro = new ResizeObserver(fit)
+    ro.observe(el)
+    return () => ro.disconnect()
   }, [ready, ra, dec, fovArcmin])
 
   // 3) Fondo (mapa de otra misión, o ninguno)

@@ -27,14 +27,16 @@ GAIA_EPOCH = Time(2016.0, format="jyear")
 
 
 def _query(q: Query) -> list[dict]:
-    p = cache.path("gaia", f"{q.key}_{config.GAIA_MAG_LIMIT:g}", "json")
+    p = cache.path("gaia2", f"{q.key}_{config.GAIA_MAG_LIMIT:g}", "json")
     hit = cache.read_json(p)
     if hit is not None:
         return hit
     from astroquery.gaia import Gaia
 
-    # radio que cubre el cuadrado del FOV + margen por movimiento propio (Barnard: ~1.5' desde 2016)
-    radius = q.fov_arcmin / 60.0 * math.sqrt(2) / 2.0 + 2.0 / 60.0
+    # radio que cubre la vista del frontend (alto = FOV, ancho hasta VIEW_ASPECT x FOV: los costados
+    # muestran el cielo alrededor del recorte) + margen por movimiento propio (Barnard: ~1.5' desde 2016)
+    half_diag = math.hypot(config.VIEW_ASPECT / 2.0, 0.5)
+    radius = q.fov_arcmin / 60.0 * half_diag + 2.0 / 60.0
     adql = f"""
         SELECT TOP {config.GAIA_ROW_LIMIT} source_id, ra, dec, phot_g_mean_mag, pmra, pmdec, parallax
         FROM {config.GAIA_TABLE}
