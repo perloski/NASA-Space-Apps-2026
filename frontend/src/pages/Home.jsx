@@ -21,7 +21,7 @@ export default function Home() {
 
       <nav className="footer-links">
         <button className="link anim" style={{ '--i': 14 }} onClick={() => navigate('/about')}>{t('ui.aboutSpherex')}</button>
-        <button className="link anim" style={{ '--i': 15 }} onClick={() => console.log('TODO: abrir "About the challenge"')}>{t('ui.aboutChallenge')}</button>
+        <a className="link anim" style={{ '--i': 15 }} href="https://www.spaceappschallenge.org/2026/challenges/planet-x-and-spherex/" target="_blank" rel="noopener noreferrer">{t('ui.aboutChallenge')}</a>
         <button className="link anim" style={{ '--i': 16 }} onClick={() => navigate('/team')}>{t('ui.aboutTeam')}</button>
         <button className="link anim" style={{ '--i': 17 }} onClick={() => navigate('/glossary')}>{t('ui.glossary')}</button>
       </nav>
