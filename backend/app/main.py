@@ -261,3 +261,24 @@ def get_photometry(ra: float | None = None, dec: float | None = None, fov_arcmin
         "flux_units": "MJy/sr",
         "points": photometry.photometry(frames, q, aperture_px),
     }
+
+
+# ----------------------------------------------------------------------------- frontend (deploy)
+# En producción (un solo contenedor, p. ej. Hugging Face Spaces) el backend sirve también el build
+# del frontend. Va AL FINAL para no tapar ninguna ruta /api. El frontend usa BrowserRouter: toda
+# ruta que no sea un archivo existente devuelve index.html y React Router decide qué pantalla mostrar.
+if (config.FRONTEND_DIST / "index.html").is_file():
+    from fastapi.responses import FileResponse
+
+    _DIST = config.FRONTEND_DIST.resolve()
+
+    @app.get("/{path:path}", include_in_schema=False)
+    def frontend(path: str):
+        if path == "api" or path.startswith("api/"):
+            raise ApiError("BAD_PARAMS", f"Endpoint inexistente: /{path}")
+        f = (_DIST / path).resolve()
+        if path and f.is_file() and f.is_relative_to(_DIST):
+            # los assets de Vite llevan hash en el nombre: se pueden cachear para siempre
+            immutable = path.startswith("assets/")
+            return FileResponse(f, headers={"Cache-Control": "public, max-age=31536000, immutable"} if immutable else None)
+        return FileResponse(_DIST / "index.html", headers={"Cache-Control": "no-cache"})

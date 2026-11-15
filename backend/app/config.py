@@ -64,6 +64,10 @@ DOWNLOAD_WORKERS = int(_env("DOWNLOAD_WORKERS", "12"))  # frames procesados en p
 # margen del cutout respecto del FOV (rotación del detector: necesita >= sqrt(2))
 CUTOUT_MARGIN = 1.45
 
+# --- Frontend (deploy en un solo contenedor) ---
+# Si existe <FRONTEND_DIST>/index.html, el backend sirve el frontend compilado (npm run build).
+FRONTEND_DIST = Path(_env("FRONTEND_DIST", str(REPO_DIR / "frontend" / "dist")))
+
 # --- CORS ---
 CORS_ORIGINS = [o.strip() for o in _env("CORS_ORIGINS", "*").split(",") if o.strip()]
 
