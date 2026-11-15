@@ -78,3 +78,19 @@ def test_stack_with_failed_frame_is_not_complete(monkeypatch):
     monkeypatch.setattr(imaging, "reprojected", reprojected)
     arrays, complete = imaging.reproject_many([{"id": "ok"}, {"id": "bad"}], q)
     assert len(arrays) == 1 and complete is False
+
+
+def test_sia_partial_outage_is_upstream_error_not_no_coverage(monkeypatch, tmp_path):
+    """IRSA caído para DR1 (502) y QR vacío: no hay que decir 'sin cobertura' (404)."""
+    monkeypatch.setattr(config, "COLLECTIONS", ["spherex_dr1", "spherex_qr"])
+    monkeypatch.setattr(spherex.cache, "path", lambda *a: tmp_path / "_".join(map(str, a)))
+
+    def query(ra, dec, coll):
+        if coll == "spherex_dr1":
+            raise Exception("HTTP Code: 502 Proxy Error")
+        return []
+
+    monkeypatch.setattr(spherex, "_query_collection", query)
+    with pytest.raises(ApiError) as e:
+        spherex.find_frames(10.0, 20.0)
+    assert e.value.code == "UPSTREAM_TIMEOUT"

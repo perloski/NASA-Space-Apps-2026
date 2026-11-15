@@ -157,8 +157,10 @@ def find_frames(ra: float, dec: float) -> list[dict]:
             except Exception as e:  # noqa: BLE001  colección inexistente, etc.
                 log.warning("SIA falló para %s: %s", c, e)
                 errors.append(e)
-        if not rows and len(errors) == len(colls):
-            raise upstream_timeout("IRSA (SIA)")
+        # Sin filas y con alguna colección caída (p. ej. IRSA devolviendo 502) NO es "sin
+        # cobertura": no sabemos si hay datos. Mejor un error de upstream que un 404 engañoso.
+        if not rows and errors:
+            raise upstream_timeout("IRSA (SIA)") from errors[0]
         frames = dedupe(rows, colls)
         for f in frames:
             f["date_utc"] = _isot_z(f["mjd"])
