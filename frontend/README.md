@@ -37,12 +37,13 @@ contra el backend local. Si el backend corre en otro lado: `$env:API_PROXY_TARGE
 | `/explore` | Ingreso de coordenadas + objetivos del reto (de `/api/targets`) |
 | `/view?target=wise0855` | Visor con un objetivo del reto |
 | `/view?ra=133.786&dec=-7.244&fov=10&det=D5&mode=blink` | Visor con coordenadas (embebible) |
-| `/about` · `/team` | Páginas informativas |
+| `/about` · `/team` · `/glossary` | Páginas informativas (el glosario acepta `#término`, p. ej. `/glossary?lang=es#brown-dwarf`) |
 
 Parámetros del visor (todos opcionales, los valores por defecto no se escriben en la URL):
 `fov` (arcmin, 1–30) · `det` (`ALL`, `D1`…`D6`) · `mode` (`blink`, `frames`, `diff`) · `a`, `b` (épocas del diff) ·
 `stretch` (`asinh`, `linear`, `zscale`) · `speed` (ms) · `opacity` (0–1) · `bg` (survey HiPS o `none`) ·
 `gaia` (`0` para ocultar) · `invert` (`1`).
+En todas las rutas, `lang` fija el idioma (`?lang=ja`); si va con `#`, el `?lang=` va antes del `#`.
 
 ## Estructura
 
@@ -54,23 +55,44 @@ Parámetros del visor (todos opcionales, los valores por defecto no se escriben 
 | `src/components/PlayerControls.jsx` | Play/pausa, anterior/siguiente, época actual |
 | `src/components/PhotometryChart.jsx` | Espectro y curva de luz (Recharts) |
 | `src/components/StarField.jsx` | Fondo de estrellas y cometas del prototipo |
-| `src/pages/*` | Pantallas: Home, Coords, Viewer, AboutSpherex, Team |
+| `src/pages/*` | Pantallas: Home, Coords, Viewer, AboutSpherex, Team, Glossary |
+| `src/components/LanguageSelect.jsx` | Selector de idioma (inicio, visor y glosario) |
+| `src/i18n/` | Traducciones: ver *Idiomas* abajo |
 | `src/styles/global.css` | CSS del prototipo + agregados del visor |
 
 ## Accesibilidad y ayuda para no científicos
 
 | Qué | Dónde |
 |---|---|
-| Ayuda en cada control (qué hace / qué vas a ver / consejo), con mouse, teclado (Tab), toque en ⓘ y lector de pantalla | `components/WithHelp.jsx`, textos en `help.js` |
+| Ayuda en cada control (qué hace / qué vas a ver / consejo), con mouse, teclado (Tab), toque en ⓘ y lector de pantalla | `components/WithHelp.jsx`, textos en `i18n/locales/*.js` → `help` |
 | Leyenda "What am I looking at?" que describe en frases simples lo que hay en pantalla | `components/ViewCaption.jsx` |
 | Recorrido guiado de 8 pasos (solo la primera vez; botón "Take the tour" para repetirlo) | `components/Tour.jsx` |
 | Recorrido de la pantalla de coordenadas (4 pasos: el campo, los ejemplos, qué es cada objeto, la ayuda); botón "How does this work?" | `pages/Coords.jsx` (`EXPLORE_STEPS`), mismo `Tour.jsx` |
 | Recetas de un clic: moverse, confirmar movimiento, objetos fríos, brillo variable | `components/Sidebar.jsx` (`RECIPES`) y `Viewer.jsx` |
 | Marca naranja sobre el objetivo y flecha hacia dónde se mueve en 10 años (datos de `/api/targets`) | `AladinView.jsx` |
-| Glosario con buscador; las ayudas enlazan a sus términos | `pages/Glossary.jsx`, textos en `glossary.js` |
+| Glosario con buscador; las ayudas enlazan a sus términos | `pages/Glossary.jsx`, textos en `i18n/locales/*.js` → `glossary` |
 
-Todos los textos para el público están en `help.js` y `glossary.js`: revisarlos ahí y, cuando se haga la
-versión en español, traducir esos dos archivos.
+## Idiomas
+
+Inglés (base), español, portugués (Brasil), alemán, alemán suizo, francés, italiano, neerlandés, sueco,
+japonés y coreano. Todo el texto visible está traducido: botones, ayudas, recorridos, leyendas, errores,
+glosario, nombres de los objetos y textos alternativos para lectores de pantalla. Las fechas usan el formato de cada idioma
+(`Intl.DateTimeFormat`) y el glosario se ordena alfabéticamente según el idioma.
+
+| Archivo | Qué hace |
+|---|---|
+| `src/i18n/index.jsx` | `I18nProvider` y `useI18n()` → `{ t, m, lang, setLang }`. Detecta el idioma: `?lang=` → elección guardada (`localStorage` `openspherex.lang`) → idioma del navegador → inglés. Pone `<html lang>` |
+| `src/i18n/locales/en.js` | Textos base. **Toda clave nueva se agrega acá primero**; si falta en otro idioma, se muestra en inglés |
+| `src/i18n/locales/<código>.js` | Un archivo por idioma, misma estructura. Se cargan solo cuando se eligen (lazy) |
+
+- `t('ui.clave', { n: 3 })` reemplaza `{n}`. No cambiar claves ni `{marcadores}` al traducir.
+- Los enlaces internos (compartir, glosario) llevan `?lang=` con `withLang()`, así se abren en el mismo idioma.
+- **Alemán suizo (`de-CH`)** es alemán estándar de Suiza, el que se usa por escrito allí: se genera desde
+  `de.js` cambiando ß → ss. El suizo alemán hablado no tiene forma escrita estándar. Si se quisiera el
+  romanche (cuarta lengua oficial), sería un `rm.js` más.
+- Registro cercano: es *tú*, pt-BR *você*, de/de-CH/sv *du*, nl *je*, it *tu*; fr *vous* (lo habitual en
+  la web francesa); ja です・ます y ko 합니다 (cortés neutro).
+- Para comprobar que un idioma no tiene claves faltantes ni marcadores rotos, comparar su estructura con `en.js`.
 
 ## Notas
 
