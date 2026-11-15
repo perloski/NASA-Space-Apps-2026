@@ -24,6 +24,7 @@ const TABLE_COLUMNS = [
 ]
 const MIN_ARROW_SPEED = 0.5 // arcsec/año: más lento que esto la flecha no se vería
 const LOADER_SPACE = 56 + 24 // ancho del gatito de carga + separación con el recuadro
+const CAPTURE_SPACE = 170 + 24 // ancho del panel "Capturalo" + separación con el recuadro
 const MAX_FRAMES = 40 // modo "frames": cada frame es una capa; más que esto satura el navegador
 
 function readState(sp) {
@@ -307,16 +308,45 @@ export default function Viewer() {
   // (pantallas angostas), va adentro, en la esquina superior izquierda.
   const frameWrapRef = useRef(null)
   const [loaderInside, setLoaderInside] = useState(false)
+  // Lo mismo para el panel "¿Te gusta lo que ves?" a la derecha (el recuadro está centrado: el
+  // espacio a la derecha es igual al de la izquierda). Si no entra, va debajo del recuadro.
+  const [captureBelow, setCaptureBelow] = useState(false)
   useEffect(() => {
     const wrap = frameWrapRef.current
     if (!wrap || typeof ResizeObserver === 'undefined') return
-    const check = () => setLoaderInside(wrap.offsetLeft < LOADER_SPACE)
+    const check = () => {
+      setLoaderInside(wrap.offsetLeft < LOADER_SPACE)
+      setCaptureBelow(wrap.offsetLeft < CAPTURE_SPACE)
+    }
     const ro = new ResizeObserver(check)
     ro.observe(wrap)
     if (wrap.offsetParent) ro.observe(wrap.offsetParent)
     check()
     return () => ro.disconnect()
   }, [])
+
+  // ---- Captura: descarga un PNG de lo que se ve en el visor en este momento
+  const captureRef = useRef(null)
+  const [capture, setCapture] = useState({ busy: false, failed: false })
+  async function onCapture() {
+    if (!captureRef.current) return
+    setCapture({ busy: true, failed: false })
+    try {
+      const blob = await captureRef.current()
+      const name = [
+        'openspherex', s.target || 'coords', s.mode === 'frames' ? effDet : s.det, cur?.label,
+      ].filter(Boolean).join('_').replace(/[^\p{L}\p{N}._-]+/gu, '-')
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${name}.png`
+      a.click()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+      setCapture({ busy: false, failed: false })
+    } catch {
+      setCapture({ busy: false, failed: true })
+    }
+  }
 
   // ---- Render
   const q = sky?.query
@@ -378,11 +408,18 @@ export default function Viewer() {
             opacity={s.opacity} invert={s.invert}
             background={s.bg === 'none' ? 'none' : backgroundUrl(s.bg)}
             gaiaSources={gaiaSources} onStatus={setLayerStatus}
-            marker={marker} arrow={arrow}
+            marker={marker} arrow={arrow} captureRef={captureRef}
           />
           {status && <div className={`viewer-status${statusIsError ? ' error' : ''}`}>{status}</div>}
         </div>
           {viewerLoading && <div className="frame-loader spinner" role="status" aria-label={status} />}
+          <div className={`capture-panel${captureBelow ? ' below' : ''}`}>
+            <p className="capture-title">{t('ui.captureTitle')}</p>
+            <button className="btn capture-btn" onClick={onCapture} disabled={!seq.length || capture.busy}>
+              📷 {t('ui.captureBtn')}
+            </button>
+            {capture.failed && <p className="err-text capture-err">{t('ui.captureFailed')}</p>}
+          </div>
         </div>
 
         <WithHelp help={H.player} className="player-help" data-tour="player">

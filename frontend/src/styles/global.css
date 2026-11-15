@@ -768,6 +768,38 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
   margin: 0;
   pointer-events: none;
 }
+/* Panel "¿Te gusta lo que ves? ¡Captúralo!": afuera del recuadro, a la derecha, centrado */
+.capture-panel {
+  position: absolute;
+  left: calc(100% + 24px);
+  top: 50%;
+  translate: 0 -50%;
+  width: 170px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+.capture-title {
+  font-family: 'Arvo', serif;
+  font-size: 17px;
+  line-height: 1.3;
+  color: var(--yellow);
+}
+.capture-btn { padding: 8px 14px; font-size: 15px; }
+.capture-btn:disabled { opacity: 0.5; cursor: default; }
+.capture-err { font-size: 13px; }
+/* Sin lugar a la derecha: debajo del recuadro, en una fila */
+.capture-panel.below {
+  position: static;
+  translate: none;
+  width: auto;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 10px;
+}
 /* Sin lugar a la izquierda (pantallas angostas): adentro, esquina superior izquierda, sobre Aladin */
 .viewer-frame-wrap.loader-inside .frame-loader.spinner {
   right: auto;

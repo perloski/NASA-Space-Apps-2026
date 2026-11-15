@@ -17,6 +17,7 @@ import { useI18n } from '../i18n/index.jsx'
 //   onStatus             ({ loaded, total, errors }) progreso de carga de las capas
 //   marker               { ra, dec, radiusDeg } círculo sobre el objetivo, o null
 //   arrow                { fromRa, fromDec, toRa, toDec } hacia dónde se mueve el objetivo, o null
+//   captureRef           ref donde se deja una función () => Promise<Blob> con un PNG de la vista
 
 const GAIA_COLOR = '#4fc3f7'
 const MARK_COLOR = '#ff8a4c' // naranja de la marca, distinto del azul de Gaia
@@ -32,7 +33,7 @@ function applyLook({ layer }, i, { activeIndex, opacity, invert }) {
 
 export default function AladinView({
   ra, dec, fovArcmin, layers, wcs, activeIndex = 0, opacity = 1, invert = false,
-  background = 'none', gaiaSources = null, onStatus, marker = null, arrow = null,
+  background = 'none', gaiaSources = null, onStatus, marker = null, arrow = null, captureRef = null,
 }) {
   const { t } = useI18n()
   const divRef = useRef(null)
@@ -79,6 +80,8 @@ export default function AladinView({
       aladin.addOverlay(mark)
       markRef.current = mark
       aladinRef.current = aladin
+      // Captura de lo que se ve (imagen + Gaia + marca), para el botón "Descargar imagen"
+      if (captureRef) captureRef.current = () => aladin.getViewData('blob', 'image/png')
       if (import.meta.env.DEV) window.__aladin = aladin // depuración desde la consola
       gaiaRef.current = gaia
       setReady(true)
@@ -90,6 +93,7 @@ export default function AladinView({
       // desmontaje real (o el primer montaje de StrictMode): limpiar para no duplicar el visor
       if (aladinRef.current && divRef.current) divRef.current.innerHTML = ''
       aladinRef.current = null
+      if (captureRef) captureRef.current = null
       gaiaRef.current = null
       markRef.current = null
       baseRef.current = null
