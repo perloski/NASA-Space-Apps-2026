@@ -38,7 +38,8 @@ _DTYPES = {-32: ">f4", -64: ">f8", 32: ">i4", 16: ">i2", 8: "u1"}
 
 _local = threading.local()
 _slots = threading.BoundedSemaphore(config.S3_MAX_CONCURRENT)
-_pool = ThreadPoolExecutor(max_workers=8, thread_name_prefix="s3")
+# lecturas Range en paralelo; antes eran 8 hilos compartidos por todos los cutouts (≈2 cutouts a la vez)
+_pool = ThreadPoolExecutor(max_workers=config.S3_MAX_CONCURRENT, thread_name_prefix="s3")
 
 
 class S3Unavailable(Exception):
