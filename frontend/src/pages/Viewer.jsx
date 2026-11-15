@@ -311,13 +311,16 @@ export default function Viewer() {
   const centerDec = q?.dec_deg ?? s.dec ?? 0
 
   let status = null
-  if (skyState.loading) status = <><span className="spinner" />{t('ui.querying')}</>
+  if (skyState.loading) status = t('ui.querying')
   else if (skyState.error) status = t(skyState.error.key, skyState.error.vars)
   else if (s.mode === 'diff' && epochA === epochB) status = t('ui.pickTwo')
   else if (layerStatus?.errors.length) status = t('ui.someFailed', { error: layerStatus.errors[0] })
   else if (layerStatus && layerStatus.loaded < layerStatus.total) {
-    status = <><span className="spinner" />{t('ui.loadingImages', { loaded: layerStatus.loaded, total: layerStatus.total })}</>
+    status = t('ui.loadingImages', { loaded: layerStatus.loaded, total: layerStatus.total })
   }
+  // El gatito de carga va encima del visor (esquina superior derecha, fuera del recuadro)
+  const viewerLoading = skyState.loading
+    || (!skyState.error && !layerStatus?.errors.length && layerStatus && layerStatus.loaded < layerStatus.total)
   const statusIsError = !skyState.loading && (skyState.error || layerStatus?.errors.length)
 
   return (
@@ -360,6 +363,7 @@ export default function Viewer() {
             marker={marker} arrow={arrow}
           />
           {status && <div className={`viewer-status${statusIsError ? ' error' : ''}`}>{status}</div>}
+          {viewerLoading && <div className="frame-loader spinner" role="status" aria-label={status} />}
         </div>
 
         <WithHelp help={H.player} className="player-help" data-tour="player">
