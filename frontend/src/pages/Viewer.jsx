@@ -420,6 +420,11 @@ export default function Viewer() {
                 <p className="phot-note">
                   {t('ui.pointsLegend', { n: photPoints.length, units: phot.data.flux_units })}
                 </p>
+                {photPoints.some((p) => p.saturated) && (
+                  <p className="phot-warning" role="note">
+                    {t('ui.saturated1')} <b>{t('ui.saturatedBold')}</b> {t('ui.saturated2')}
+                  </p>
+                )}
                 <details className="phot-note">
                   <summary>{t('ui.showTable')}</summary>
                   <div className="data-table-wrap" tabIndex={0} aria-label={t('ui.tableAria')}>

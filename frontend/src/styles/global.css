@@ -946,6 +946,13 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
 .tour-items li + li { margin-top: 3px; }
 .tour-items b { color: var(--yellow); font-weight: 600; }
 .tour-card.wide { width: min(520px, calc(100vw - 16px)); }
+.phot-warning {
+  margin-top: 8px; padding: 8px 12px;
+  border: 1px solid var(--orange); border-radius: 6px;
+  background: rgba(242, 100, 25, 0.08);
+  color: #e8edf7; font-size: 13px; line-height: 1.5;
+}
+.phot-warning b { color: var(--yellow); font-weight: 600; }
 
 /* ================= Selector de idioma ================= */
 .lang-select {

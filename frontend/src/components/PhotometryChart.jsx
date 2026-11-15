@@ -32,7 +32,9 @@ function Tip({ active, payload, t }) {
       <div><b>{p.detector}</b> · {p.epoch_id} · {p.date ?? `MJD ${p.mjd.toFixed(2)}`}</div>
       <div>λ = {p.wavelength_um?.toFixed(3)} µm</div>
       <div>flux = {p.flux.toFixed(4)} ± {p.flux_err?.toFixed(4) ?? '–'} MJy/sr</div>
-      {p.flagged && <div style={{ color: '#ff8a4c' }}>{t('ui.tipFlagged')}</div>}
+      {p.saturated
+        ? <div style={{ color: '#ff8a4c' }}>{t('ui.tipSaturated')}</div>
+        : p.flagged && <div style={{ color: '#ff8a4c' }}>{t('ui.tipFlagged')}</div>}
     </div>
   )
 }
