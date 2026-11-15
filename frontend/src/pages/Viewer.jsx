@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { apiUrl, diffUrl, fetchPhotometry, fetchSky, fetchTargets, withParams } from '../api.js'
+import { apiUrl, diffUrl, fetchGaia, fetchPhotometry, fetchSky, fetchTargets, withParams } from '../api.js'
 import AladinView from '../components/AladinView.jsx'
 import PhotometryChart from '../components/PhotometryChart.jsx'
 import PlayerControls from '../components/PlayerControls.jsx'
@@ -26,6 +26,7 @@ const MIN_ARROW_SPEED = 0.5 // arcsec/año: más lento que esto la flecha no se 
 const LOADER_SPACE = 56 + 24 // ancho del gatito de carga + separación con el recuadro
 const CAPTURE_SPACE = 170 + 24 // ancho del panel "Capturalo" + separación con el recuadro
 const MAX_FRAMES = 40 // modo "frames": cada frame es una capa; más que esto satura el navegador
+const SLOW_QUERY_MS = 12000 // si /api/sky tarda más que esto, se avisa que el lento es el archivo de SPHEREx
 
 function readState(sp) {
   const num = (k, d) => {
@@ -90,6 +91,13 @@ export default function Viewer() {
 
   const [sky, setSky] = useState(null)
   const [skyState, setSkyState] = useState({ loading: false, error: null })
+  const [skySlow, setSkySlow] = useState(false)
+  useEffect(() => {
+    setSkySlow(false)
+    if (!skyState.loading) return
+    const id = setTimeout(() => setSkySlow(true), SLOW_QUERY_MS)
+    return () => clearTimeout(id)
+  }, [skyState.loading, queryQs])
 
   useEffect(() => {
     if (!queryQs) { setSkyState({ loading: false, error: { key: 'ui.enterToStart' } }); return }
@@ -102,6 +110,25 @@ export default function Viewer() {
     }, 350)
     return () => { cancelled = true; clearTimeout(t) }
   }, [queryQs])
+
+  // ---- Gaia: llega aparte, sin frenar las imágenes. Si /api/sky ya la trajo (caché del servidor),
+  // status "ok"; si no, "pending" y se pide a sky.overlays.gaia.url. Lo ya bajado se guarda por URL.
+  const gaiaCache = useRef(new Map())
+  const [gaiaRetry, setGaiaRetry] = useState(0)
+  const [gaia, setGaia] = useState({ status: 'idle', data: null, error: null })
+  useEffect(() => {
+    const g = sky?.overlays?.gaia
+    if (!g) { setGaia({ status: 'idle', data: null, error: null }); return }
+    if (g.status !== 'pending') { setGaia({ status: 'ok', data: g, error: null }); return }
+    const hit = gaiaCache.current.get(g.url)
+    if (hit) { setGaia({ status: 'ok', data: hit, error: null }); return }
+    let cancelled = false
+    setGaia({ status: 'loading', data: null, error: null })
+    fetchGaia(g.url)
+      .then((d) => { gaiaCache.current.set(g.url, d); if (!cancelled) setGaia({ status: 'ok', data: d, error: null }) })
+      .catch((e) => { if (!cancelled) setGaia({ status: 'error', data: null, error: e.code ?? 'INTERNAL' }) })
+    return () => { cancelled = true }
+  }, [sky, gaiaRetry])
 
   // ---- Objetivos del reto: tipo de objeto y hacia dónde se mueve (para la marca y la leyenda)
   const [targetList, setTargetList] = useState(null)
@@ -179,12 +206,12 @@ export default function Viewer() {
 
   // ---- Gaia: posiciones de la época visible
   const gaiaSources = useMemo(() => {
-    if (!s.gaia || !sky || !cur) return null
-    return sky.overlays.gaia.sources.map((g) => {
+    if (!s.gaia || !gaia.data || !cur) return null
+    return gaia.data.sources.map((g) => {
       const p = g.pos_by_epoch?.[cur.epochId] ?? g
       return { ra: p.ra_deg, dec: p.dec_deg, source_id: g.source_id, g_mag: g.g_mag }
     })
-  }, [s.gaia, sky, cur?.epochId])
+  }, [s.gaia, gaia.data, cur?.epochId])
 
   // ---- Fotometría (lenta la primera vez: baja todos los cutouts)
   const [phot, setPhot] = useState({ loading: false, data: null, error: null })
@@ -357,7 +384,7 @@ export default function Viewer() {
   const centerDec = q?.dec_deg ?? s.dec ?? 0
 
   let status = null
-  if (skyState.loading) status = t('ui.querying')
+  if (skyState.loading) status = skySlow ? t('ui.queryingSlow') : t('ui.querying')
   else if (skyState.error) status = t(skyState.error.key, skyState.error.vars)
   else if (s.mode === 'diff' && epochA === epochB) status = t('ui.pickTwo')
   else if (layerStatus?.errors.length) status = t('ui.someFailed', { error: layerStatus.errors[0] })
@@ -368,13 +395,15 @@ export default function Viewer() {
   const viewerLoading = skyState.loading
     || (!skyState.error && !layerStatus?.errors.length && layerStatus && layerStatus.loaded < layerStatus.total)
   const statusIsError = !skyState.loading && (skyState.error || layerStatus?.errors.length)
+  // Estado de Gaia, aparte del de las imágenes (solo si las estrellas de Gaia están activadas)
+  const gaiaMsg = s.gaia && sky && (gaia.status === 'loading' || gaia.status === 'error') ? gaia.status : null
 
   return (
     <section id="screen-viewer" className="screen active">
       <Sidebar
         s={{ ...s, a: epochA, b: epochB, coordsText: s.coordsText || (sky ? `${sky.query.ra_deg} ${sky.query.dec_deg}` : '') }}
         set={set} sky={sky} onGo={onGo} onRecipe={applyRecipe}
-        onDefaults={onDefaults} onShare={onShare} shareMsg={shareMsg} current={cur?.frame}
+        onDefaults={onDefaults} onShare={onShare} shareMsg={shareMsg} current={cur?.frame} gaia={gaia}
       />
 
       <main className="viewer-main" ref={mainRef}>
@@ -410,7 +439,22 @@ export default function Viewer() {
             gaiaSources={gaiaSources} onStatus={setLayerStatus}
             marker={marker} arrow={arrow} captureRef={captureRef}
           />
-          {status && <div className={`viewer-status${statusIsError ? ' error' : ''}`}>{status}</div>}
+          {(status || gaiaMsg) && (
+            <div className="viewer-statuses" role="status" aria-live="polite">
+              {status && <div className={`viewer-status${statusIsError ? ' error' : ''}`}>{status}</div>}
+              {gaiaMsg === 'loading' && (
+                <div className="viewer-status gaia-status">
+                  <span className="gaia-dot" aria-hidden="true" />{t('ui.gaiaLoading')}
+                </div>
+              )}
+              {gaiaMsg === 'error' && (
+                <div className="viewer-status gaia-status warn">
+                  <span>⚠ {gaia.error === 'NETWORK' ? t('errors.NETWORK') : t('ui.gaiaFailed')}</span>
+                  <button className="gaia-retry" onClick={() => setGaiaRetry((n) => n + 1)}>{t('ui.gaiaRetry')}</button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
           {viewerLoading && <div className="frame-loader spinner" role="status" aria-label={status} />}
           <div className={`capture-panel${captureBelow ? ' below' : ''}`}>

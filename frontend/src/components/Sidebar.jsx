@@ -30,7 +30,7 @@ export const RECIPES = [
   { id: 'variable', emoji: '✨', label: 'recipeVariable', help: 'recipeVariable' },
 ]
 
-export default function Sidebar({ s, set, sky, onGo, onDefaults, onShare, shareMsg, current, onRecipe }) {
+export default function Sidebar({ s, set, sky, onGo, onDefaults, onShare, shareMsg, current, onRecipe, gaia }) {
   const { t, m, lang } = useI18n()
   const H = m.help
   const [coords, setCoords] = useState(s.coordsText)
@@ -147,6 +147,8 @@ export default function Sidebar({ s, set, sky, onGo, onDefaults, onShare, shareM
         <WithHelp help={H.gaia}>
           <label className="cb">
             <input type="checkbox" checked={s.gaia} onChange={(e) => set({ gaia: e.target.checked })} /> {t('ui.gaiaStars')}
+            {gaia?.status === 'loading' && <span className="gaia-dot" title={t('ui.gaiaLoading')} aria-label={t('ui.gaiaLoading')} />}
+            {gaia?.status === 'error' && <span className="gaia-off" title={t('ui.gaiaFailed')}> ⚠ {t('ui.gaiaUnavailableShort')}</span>}
           </label>
         </WithHelp>
         <WithHelp help={H.marker}>
@@ -178,7 +180,9 @@ export default function Sidebar({ s, set, sky, onGo, onDefaults, onShare, shareM
         <WithHelp help={H.dataSummary} className="anim" style={{ '--i': 13 }} innerClassName="boxed meta-list">
           <span><b>{t('ui.frames')}</b> {sky.frames.length} · <b>{t('ui.epochs')}</b> {sky.epochs.length} ({sky.epoch_strategy})</span>
           <span><b>{t('ui.data')}</b> {sky.data_sources.map((d) => `${d.collection} (${d.n_frames})`).join(', ')}</span>
-          <span><b>{t('ui.gaiaCount')}</b> {sky.overlays.gaia.sources.length} (G &lt; {sky.overlays.gaia.mag_limit_g})</span>
+          <span><b>{t('ui.gaiaCount')}</b> {gaia?.status === 'ok'
+            ? `${gaia.data.sources.length} (G < ${gaia.data.mag_limit_g})`
+            : gaia?.status === 'error' ? <span className="gaia-off">⚠ {t('ui.gaiaUnavailableShort')}</span> : '…'}</span>
           <span><b>{t('ui.units')}</b> {sky.render_defaults.units}{sky.render_defaults.zodi_subtracted ? `, ${t('ui.zodiSubtracted')}` : ''}</span>
         </WithHelp>
       )}

@@ -4,7 +4,7 @@
 const BASE = import.meta.env.VITE_API_BASE ?? '' // vacío en dev/preview (usa el proxy)
 export const apiUrl = (path) => `${BASE}${path}`
 
-// Los errores llevan .code (BAD_PARAMS, NO_COVERAGE, UPSTREAM_TIMEOUT, INTERNAL, NETWORK): la
+// Los errores llevan .code (BAD_PARAMS, NO_COVERAGE, UPSTREAM_TIMEOUT, GAIA_UNAVAILABLE, INTERNAL, NETWORK): la
 // interfaz muestra el texto de ese código en el idioma elegido (errors.* en i18n/locales).
 function apiError(code, message) {
   const e = new Error(message)
@@ -28,6 +28,9 @@ async function get(path) {
 export const fetchTargets = () => get('/api/targets')
 export const fetchSky = (qs) => get(`/api/sky?${qs}`)
 export const fetchPhotometry = (qs) => get(`/api/photometry?${qs}`)
+// Gaia va aparte de /api/sky (la URL viene en sky.overlays.gaia.url): si Gaia (ESA) está caído o
+// lento, las imágenes de SPHEREx se muestran igual y las estrellas llegan después (o no).
+export const fetchGaia = (url) => get(url)
 
 // Agrega/reemplaza parámetros (p. ej. stretch) en una URL que vino del backend.
 export function withParams(url, params) {

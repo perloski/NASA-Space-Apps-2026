@@ -40,6 +40,11 @@ export default {
     "querying": "Querying SPHEREx archive…",
     "loadingImages": "Loading SPHEREx images {loaded}/{total}… (the first time can take ~30 s)",
     "someFailed": "Some images failed: {error}",
+    "queryingSlow": "The SPHEREx archive (IRSA, NASA) is taking longer than usual… still waiting.",
+    "gaiaLoading": "Loading Gaia stars (ESA)… SPHEREx images don’t wait for Gaia.",
+    "gaiaFailed": "Gaia (ESA) is not responding right now. SPHEREx images work as usual, just without the Gaia stars.",
+    "gaiaRetry": "Retry Gaia",
+    "gaiaUnavailableShort": "Gaia not responding",
     "pickTwo": "Pick two different epochs.",
     "enterToStart": "Enter coordinates to start.",
     "framesStacked": "{det} · {n} frames stacked",
@@ -185,7 +190,8 @@ export default {
     "NO_COVERAGE": "SPHEREx has not photographed this spot of the sky yet.",
     "UPSTREAM_TIMEOUT": "The NASA archive is busy right now. Try again in a few seconds.",
     "INTERNAL": "Something went wrong on the server. Try again in a few seconds.",
-    "NETWORK": "Cannot reach the server. Is the backend running?"
+    "NETWORK": "Cannot reach the server. Is the backend running?",
+    "GAIA_UNAVAILABLE": "Gaia (ESA) is not responding right now. SPHEREx images work as usual."
   },
   "caption": {
     "title": "What am I looking at?",
