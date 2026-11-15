@@ -7,7 +7,8 @@
 //   · Mediciones en curso: si se sale a la mitad, el pedido sigue y su resultado se guarda; al
 //     volver, el visor se engancha a ese mismo pedido en vez de empezar otro.
 
-const STORAGE_KEY = 'openspherex.photometry.v1'
+// v2: antes se guardaban mediciones vacías (estrellas saturadas como R Draconis daban 0 puntos)
+const STORAGE_KEY = 'openspherex.photometry.v2'
 const MAX_ENTRIES = 20
 
 const memory = new Map() // clave -> entrada (también funciona sin localStorage)
@@ -59,7 +60,10 @@ export function savePhot(key, patch) {
 export function measureOnce(key, fetcher) {
   if (pending.has(key)) return pending.get(key)
   const p = fetcher()
-    .then((data) => { savePhot(key, { data, open: true }); return data })
+    .then((data) => {
+      if (data?.points?.length) savePhot(key, { data, open: true }) // un resultado vacío no se guarda
+      return data
+    })
     .finally(() => pending.delete(key))
   pending.set(key, p)
   return p
