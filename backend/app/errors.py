@@ -6,6 +6,7 @@ STATUS = {
     "NO_COVERAGE": 404,
     "UPSTREAM_TIMEOUT": 504,
     "INTERNAL": 500,
+    "GAIA_UNAVAILABLE": 503,
 }
 
 
@@ -29,6 +30,10 @@ def bad_params(msg: str) -> ApiError:
 
 def no_coverage(msg: str = "SPHEREx todavía no observó estas coordenadas.") -> ApiError:
     return ApiError("NO_COVERAGE", msg)
+
+
+def gaia_unavailable(msg: str) -> ApiError:
+    return ApiError("GAIA_UNAVAILABLE", msg)
 
 
 def upstream_timeout(service: str) -> ApiError:

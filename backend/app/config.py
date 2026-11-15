@@ -55,6 +55,13 @@ GAIA_ROW_LIMIT = int(_env("GAIA_ROW_LIMIT", "3000"))
 # Proporción máxima ancho/alto del visor del frontend (el recorte de SPHEREx es cuadrado y ocupa el
 # alto; a los costados se ve el cielo alrededor). Define cuánto cielo cubre la consulta a Gaia.
 VIEW_ASPECT = float(_env("VIEW_ASPECT", "1.6"))
+# Gaia (ESA) a veces se cae: cuando no responde, la conexión tarda ~50 s en fallar. /api/sky ya no
+# espera a Gaia (ver /api/gaia), y /api/gaia corta a los GAIA_TIMEOUT_S. Después de un fallo, durante
+# GAIA_RETRY_AFTER_S se responde "no disponible" al instante en vez de volver a esperar.
+GAIA_TIMEOUT_S = float(_env("GAIA_TIMEOUT_S", "25"))
+GAIA_RETRY_AFTER_S = float(_env("GAIA_RETRY_AFTER_S", "60"))
+# Para probar el frontend con Gaia caído: SPHEREX_GAIA_DOWN=1 (o "slow": tarda GAIA_TIMEOUT_S y falla)
+GAIA_SIMULATE = _env("SPHEREX_GAIA_DOWN", "0")
 
 # --- Red / caché ---
 CACHE_DIR = Path(_env("SPHEREX_CACHE_DIR", str(BACKEND_DIR / "cache")))

@@ -3,6 +3,9 @@ from __future__ import annotations
 
 import logging
 import math
+import threading
+import time
+from concurrent.futures import Future, ThreadPoolExecutor, TimeoutError as FutureTimeout
 
 import astropy.units as u
 import numpy as np
@@ -10,6 +13,7 @@ from astropy.coordinates import Distance, SkyCoord
 from astropy.time import Time
 
 from . import cache, config
+from .errors import gaia_unavailable
 from .grid import Query
 
 log = logging.getLogger(__name__)
@@ -26,11 +30,20 @@ warnings.filterwarnings("ignore", category=ErfaWarning)
 GAIA_EPOCH = Time(2016.0, format="jyear")
 
 
+def _cache_path(q: Query):
+    return cache.path("gaia2", f"{q.key}_{config.GAIA_MAG_LIMIT:g}", "json")
+
+
 def _query(q: Query) -> list[dict]:
-    p = cache.path("gaia2", f"{q.key}_{config.GAIA_MAG_LIMIT:g}", "json")
+    """Caché o consulta a Gaia (bloqueante: si Gaia está caído puede tardar ~50 s en fallar)."""
+    p = _cache_path(q)
     hit = cache.read_json(p)
     if hit is not None:
         return hit
+    if config.GAIA_SIMULATE == "slow":
+        time.sleep(config.GAIA_TIMEOUT_S + 5)
+    if config.GAIA_SIMULATE != "0":
+        raise ConnectionError("Gaia caído (simulado con SPHEREX_GAIA_DOWN)")
     from astroquery.gaia import Gaia
 
     # radio que cubre la vista del frontend (alto = FOV, ancho hasta VIEW_ASPECT x FOV: los costados
@@ -87,12 +100,65 @@ def propagate(ra, dec, pmra, pmdec, parallax, ref: Time, targets: list[Time]) ->
     return out
 
 
-def overlay(q: Query, epochs: list[dict]) -> dict:
+# --------------------------------------------------------------------------- consulta con tope de tiempo
+# La consulta corre en un hilo aparte: si Gaia tarda más de GAIA_TIMEOUT_S, /api/gaia responde
+# GAIA_UNAVAILABLE pero el hilo sigue; si al final Gaia contesta, queda en caché para el próximo pedido.
+_pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="gaia")
+_lock = threading.Lock()
+_inflight: dict[str, Future] = {}  # una sola consulta por zona aunque lleguen varios pedidos
+_down_until = 0.0                  # tras un fallo, no se vuelve a esperar a Gaia hasta este momento
+
+
+def _run(key: str, q: Query) -> list[dict]:
+    global _down_until
     try:
-        sources = _query(q)
-    except Exception as e:  # noqa: BLE001  Gaia caída no debe romper /api/sky
+        return _query(q)
+    except Exception as e:  # noqa: BLE001
         log.warning("Consulta Gaia falló: %s", e)
-        sources = []
+        _down_until = time.monotonic() + config.GAIA_RETRY_AFTER_S
+        raise
+    finally:
+        with _lock:
+            _inflight.pop(key, None)
+
+
+def sources(q: Query) -> list[dict]:
+    """Estrellas de Gaia del campo, o ApiError GAIA_UNAVAILABLE (caído o lento)."""
+    hit = cache.read_json(_cache_path(q))
+    if hit is not None:
+        return hit
+    if time.monotonic() < _down_until:
+        raise gaia_unavailable("Gaia (ESA) no está respondiendo. Probá de nuevo en un minuto.")
+    with _lock:
+        fut = _inflight.get(q.key)
+        if fut is None:
+            fut = _inflight[q.key] = _pool.submit(_run, q.key, q)
+    try:
+        return fut.result(timeout=config.GAIA_TIMEOUT_S)
+    except FutureTimeout:
+        raise gaia_unavailable(f"Gaia (ESA) no respondió en {config.GAIA_TIMEOUT_S:g} s.") from None
+    except Exception as e:  # noqa: BLE001
+        raise gaia_unavailable(f"Gaia (ESA) no responde: {type(e).__name__}.") from None
+
+
+def cached_overlay(q: Query, epochs: list[dict]) -> dict | None:
+    """El overlay si las estrellas ya están en caché (sin tocar la red); si no, None."""
+    hit = cache.read_json(_cache_path(q))
+    return None if hit is None else build_overlay(hit, epochs)
+
+
+def pending_overlay() -> dict:
+    """Lo que va en /api/sky cuando Gaia todavía no se consultó: el frontend lo pide a /api/gaia."""
+    return {"catalog": "gaiadr3", "ref_epoch": "J2016.0", "mag_limit_g": config.GAIA_MAG_LIMIT,
+            "status": "pending", "sources": []}
+
+
+def overlay(q: Query, epochs: list[dict]) -> dict:
+    """Overlay completo (consulta Gaia si hace falta). Lanza GAIA_UNAVAILABLE si Gaia no responde."""
+    return build_overlay(sources(q), epochs)
+
+
+def build_overlay(sources: list[dict], epochs: list[dict]) -> dict:
     times = [Time(e["mjd_mid"], format="mjd") for e in epochs]
     pos = []
     if sources and times:
@@ -112,5 +178,6 @@ def overlay(q: Query, epochs: list[dict]) -> dict:
         "catalog": "gaiadr3",
         "ref_epoch": "J2016.0",
         "mag_limit_g": config.GAIA_MAG_LIMIT,
+        "status": "ok",
         "sources": out,
     }

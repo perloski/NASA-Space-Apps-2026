@@ -161,9 +161,23 @@ def get_sky(
         "epochs": epochs_json,
         "epoch_strategy": strategy,
         "frames": frames_json,
-        "overlays": {"gaia": gaia.overlay(q, epochs)},
+        # Gaia NO se espera acá (si está caído tarda ~50 s en fallar y frenaba todo el visor): si las
+        # estrellas están en caché van directo; si no, status "pending" y el frontend las pide a /api/gaia.
+        "overlays": {"gaia": (gaia.cached_overlay(q, epochs) or gaia.pending_overlay())
+                     | {"url": f"/api/gaia?{qs}"}},
         "render_defaults": {"stretch": "asinh", "units": "MJy/sr", "zodi_subtracted": True},
     }
+
+
+@app.get("/api/gaia")
+def get_gaia(ra: float, dec: float, fov_arcmin: float | None = None):
+    """Overlay de Gaia (mismo formato que overlays.gaia de /api/sky). 503 GAIA_UNAVAILABLE si Gaia
+    está caído o tarda más de GAIA_TIMEOUT_S: el visor sigue funcionando sin las estrellas."""
+    q = Query.make(ra, dec, fov_arcmin)
+    if config.MOCK:
+        return mock.gaia(q)
+    _, _, epochs = _frames_and_epochs(q)
+    return gaia.overlay(q, epochs)
 
 
 @app.get("/api/frame/{frame_id}.png")

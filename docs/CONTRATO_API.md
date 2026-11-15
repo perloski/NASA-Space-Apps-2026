@@ -17,7 +17,8 @@
 
 | Método | Ruta | Qué hace | Velocidad |
 |---|---|---|---|
-| GET | `/api/sky` | Metadatos: frames, épocas, detectores, grilla, Gaia. **No procesa imágenes.** | Rápido (1 query SIA + 1 Gaia) |
+| GET | `/api/sky` | Metadatos: frames, épocas, detectores, grilla. **No procesa imágenes ni espera a Gaia.** | Rápido (1 query SIA) |
+| GET | `/api/gaia` | Estrellas de Gaia del campo (mismo formato que `overlays.gaia`). URL en `overlays.gaia.url` | Lento si Gaia (ESA) está lento; corta a los 25 s |
 | GET | `/api/frame/{frame_id}.png` | PNG de un frame individual, reproyectado a la grilla común | Lento la 1ª vez, después caché |
 | GET | `/api/frame/{frame_id}.fits` | (Opcional) mismo recorte reproyectado en FITS, para `aladin.displayFITS` | Igual que el PNG |
 | GET | `/api/stack.png` | Suma/promedio de frames de una época y detector | Lento la 1ª vez |
@@ -112,6 +113,11 @@ Las rutas de imagen reciben además: `stretch` (`asinh`|`linear`|`zscale`), y pa
       "catalog": "gaiadr3",
       "ref_epoch": "J2016.0",
       "mag_limit_g": 20,
+      // "ok": sources viene lleno (estaba en la caché del servidor).
+      // "pending": sources vacío; el front pide `url` (/api/gaia) y las imágenes NO esperan a Gaia.
+      // /api/gaia devuelve este mismo objeto con status "ok", o 503 GAIA_UNAVAILABLE.
+      "status": "ok",
+      "url": "/api/gaia?ra=133.786245&dec=-7.244410&fov_arcmin=10",
       "sources": [
         {
           "source_id": "3108266213034211584",
@@ -163,7 +169,9 @@ Un punto por frame, medido en el píxel del objetivo. El front grafica **dos vis
 { "error": { "code": "NO_COVERAGE", "message": "SPHEREx todavía no observó estas coordenadas." } }
 ```
 
-Códigos: `BAD_PARAMS` (400), `NO_COVERAGE` (404), `UPSTREAM_TIMEOUT` (504, IRSA/Gaia lento), `INTERNAL` (500).
+Códigos: `BAD_PARAMS` (400), `NO_COVERAGE` (404), `UPSTREAM_TIMEOUT` (504, IRSA lento), `GAIA_UNAVAILABLE` (503, solo `/api/gaia`: Gaia caído o tarda más de `GAIA_TIMEOUT_S`; tras un fallo responde al instante durante `GAIA_RETRY_AFTER_S`), `INTERNAL` (500).
+
+Para probar el visor con Gaia caído: `SPHEREX_GAIA_DOWN=1` (falla al instante) o `SPHEREX_GAIA_DOWN=slow` (tarda y falla); también en modo mock.
 
 ## URL del front (compartible / embebible)
 

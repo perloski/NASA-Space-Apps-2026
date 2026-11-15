@@ -24,7 +24,10 @@ def warm(target_id: str, fov: float, do_frames: bool, do_phot: bool) -> None:
         return
     _, epochs = spherex.group_epochs(frames)
     print(f"[{target_id}] {len(frames)} frames, {len(epochs)} épocas")
-    gaia.overlay(q, epochs)
+    try:
+        gaia.overlay(q, epochs)
+    except ApiError as err:
+        print(f"  gaia: {err.message}")
     dets = sorted({f["detector"] for f in frames}) + ["ALL"]
     for d in dets:
         for e in epochs:

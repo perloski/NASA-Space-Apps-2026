@@ -36,7 +36,22 @@ def sky(q: Query, target_name: str | None, coord_epoch: str | None) -> dict:
     out["query"]["target_name"] = target_name
     out["query"]["coord_epoch"] = coord_epoch
     out["grid"] = grid_json(q)
+    # igual que el backend real sin caché: Gaia llega aparte, por /api/gaia
+    out["overlays"]["gaia"] = {k: v for k, v in out["overlays"]["gaia"].items() if k != "sources"} | {
+        "status": "pending", "sources": [], "url": f"/api/gaia?{q.qs()}"}
     return out
+
+
+def gaia(q: Query) -> dict:
+    """/api/gaia en modo mock (respeta SPHEREX_GAIA_DOWN para probar el visor con Gaia caído)."""
+    import time
+
+    from .errors import gaia_unavailable
+    if config.GAIA_SIMULATE == "slow":
+        time.sleep(config.GAIA_TIMEOUT_S)
+    if config.GAIA_SIMULATE != "0":
+        raise gaia_unavailable("Gaia (ESA) no responde (simulado con SPHEREX_GAIA_DOWN).")
+    return _retarget(_load("sky_wise0855.json"), q)["overlays"]["gaia"] | {"status": "ok"}
 
 
 def photometry(q: Query, aperture_px: float) -> dict:

@@ -106,7 +106,45 @@ def test_sky_mock(client):
     assert j["schema_version"] == "1.1"
     assert j["query"]["target_name"] == "WISE 0855"
     assert f"ra={j['query']['ra_deg']:.6f}" in j["frames"][0]["image_url"]
-    assert all(isinstance(s["source_id"], str) for s in j["overlays"]["gaia"]["sources"])
+    g = j["overlays"]["gaia"]
+    assert g["status"] == "pending" and g["sources"] == []
+    # Gaia llega aparte (no frena /api/sky)
+    r = client.get(g["url"])
+    assert r.status_code == 200 and r.json()["status"] == "ok"
+    assert all(isinstance(s["source_id"], str) for s in r.json()["sources"])
+
+
+def test_gaia_down_mock(client, monkeypatch):
+    monkeypatch.setattr(config, "GAIA_SIMULATE", "1")
+    j = client.get("/api/sky", params={"target": "wise0855"})
+    assert j.status_code == 200  # las imágenes de SPHEREx no dependen de Gaia
+    r = client.get(j.json()["overlays"]["gaia"]["url"])
+    assert r.status_code == 503 and r.json()["error"]["code"] == "GAIA_UNAVAILABLE"
+
+
+def test_gaia_timeout_and_fail_fast(monkeypatch, tmp_path):
+    """Gaia lento: corta a los GAIA_TIMEOUT_S; tras un fallo responde al instante."""
+    import time as _t
+    from app import errors
+    from app.grid import Query
+    monkeypatch.setattr(config, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(config, "GAIA_TIMEOUT_S", 0.3)
+    monkeypatch.setattr(gaia, "_down_until", 0.0)
+
+    def slow(q):
+        _t.sleep(0.8)
+        raise ConnectionError("caído")
+    monkeypatch.setattr(gaia, "_query", slow)
+    q = Query.make(10.0, 10.0, 10)
+    t0 = _t.time()
+    with pytest.raises(errors.ApiError) as e:
+        gaia.sources(q)
+    assert e.value.code == "GAIA_UNAVAILABLE" and _t.time() - t0 < 0.7
+    _t.sleep(0.7)  # el hilo termina de fallar -> marca a Gaia como caído
+    t0 = _t.time()
+    with pytest.raises(errors.ApiError):
+        gaia.sources(q)
+    assert _t.time() - t0 < 0.1
 
 
 def test_images_mock(client):
