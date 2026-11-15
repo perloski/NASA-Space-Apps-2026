@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import AnimatedTitle from '../components/AnimatedTitle.jsx'
 import LanguageSelect from '../components/LanguageSelect.jsx'
 import { useI18n } from '../i18n/index.jsx'
+import gatitoOjos from '../images/gatito-ojos.png'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -24,6 +25,8 @@ export default function Home() {
         <button className="link anim" style={{ '--i': 16 }} onClick={() => navigate('/team')}>{t('ui.aboutTeam')}</button>
         <button className="link anim" style={{ '--i': 17 }} onClick={() => navigate('/glossary')}>{t('ui.glossary')}</button>
       </nav>
+
+      <img src={gatitoOjos} alt="Gatito con ojos" className="home-gatito anim" style={{ '--i': 18 }} />
     </section>
   )
 }

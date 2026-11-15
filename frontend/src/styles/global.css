@@ -139,6 +139,18 @@ html, body {
 }
 .link:hover { color: var(--yellow); }
 
+.home-gatito {
+  position: absolute;
+  bottom: 16px;
+  right: 24px;
+  width: clamp(140px, 18vw, 240px);
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.4));
+}
+
 /* ---------- Pantalla de coordenadas ---------- */
 .heading {
   font-family: 'Alegreya SC', serif;
@@ -985,4 +997,5 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
   /* coordenadas: el contenido arranca debajo de los botones de arriba y el campo entra con su ⓘ */
   #screen-coords.active { justify-content: flex-start; padding-top: 96px; overflow-y: auto; }
   #screen-coords .input { width: calc(100vw - 48px - 60px); }
+  .home-gatito { bottom: 8px; right: 12px; width: 100px; }
 }
