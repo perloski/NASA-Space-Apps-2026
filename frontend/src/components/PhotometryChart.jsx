@@ -2,6 +2,7 @@ import {
   CartesianGrid, ErrorBar, ReferenceArea, ResponsiveContainer, Scatter, ScatterChart,
   Tooltip, XAxis, YAxis,
 } from 'recharts'
+import { useI18n } from '../i18n/index.jsx'
 
 // Espectro (λ vs flujo) o curva de luz (MJD vs flujo) con los datos de /api/photometry.
 // Una sola serie: los detectores no se solapan en λ, así que en el espectro el detector
@@ -20,7 +21,7 @@ function Dot({ cx, cy, payload }) {
     : <circle cx={cx} cy={cy} r={4} fill={SERIES} stroke="#0b1326" strokeWidth={2} />
 }
 
-function Tip({ active, payload }) {
+function Tip({ active, payload, t }) {
   if (!active || !payload?.length) return null
   const p = payload[0].payload
   return (
@@ -31,21 +32,26 @@ function Tip({ active, payload }) {
       <div><b>{p.detector}</b> · {p.epoch_id} · {p.date ?? `MJD ${p.mjd.toFixed(2)}`}</div>
       <div>λ = {p.wavelength_um?.toFixed(3)} µm</div>
       <div>flux = {p.flux.toFixed(4)} ± {p.flux_err?.toFixed(4) ?? '–'} MJy/sr</div>
-      {p.flagged && <div style={{ color: '#ff8a4c' }}>⚑ flagged pixel in aperture</div>}
+      {p.flagged && <div style={{ color: '#ff8a4c' }}>{t('ui.tipFlagged')}</div>}
     </div>
   )
 }
 
 export default function PhotometryChart({ points, view, detectors = [] }) {
+  const { t } = useI18n()
   const isSpectrum = view === 'spectrum'
   const data = points.filter((p) => (isSpectrum ? p.wavelength_um != null : true))
-  if (!data.length) return <p className="phot-note">No points to show.</p>
+  if (!data.length) {
+    return (
+      <p className="phot-note">{t('ui.noPoints')}</p>
+    )
+  }
 
   const xKey = isSpectrum ? 'wavelength_um' : 'mjd'
   const tick = { fill: INK, fontSize: 12 }
 
   return (
-    <div role="img" aria-label={isSpectrum ? 'Spectrum: flux versus wavelength' : 'Light curve: flux versus date'}>
+    <div role="img" aria-label={isSpectrum ? t('ui.chartSpectrumAria') : t('ui.chartLightCurveAria')}>
       <ResponsiveContainer width="100%" height={280}>
         <ScatterChart margin={{ top: 10, right: 16, bottom: 28, left: 8 }}>
           <CartesianGrid stroke={GRID} strokeDasharray="0" vertical={false} />
@@ -59,14 +65,14 @@ export default function PhotometryChart({ points, view, detectors = [] }) {
           <XAxis
             type="number" dataKey={xKey} domain={['auto', 'auto']} tick={tick}
             stroke={GRID} tickFormatter={(v) => (isSpectrum ? v.toFixed(1) : v.toFixed(0))}
-            label={{ value: isSpectrum ? 'Wavelength (µm)' : 'Date (MJD)', position: 'bottom', fill: INK, fontSize: 13 }}
+            label={{ value: isSpectrum ? t('ui.axisWavelength') : t('ui.axisDate'), position: 'bottom', fill: INK, fontSize: 13 }}
           />
           <YAxis
             type="number" dataKey="flux" tick={tick} stroke={GRID} width={64}
             tickFormatter={(v) => v.toFixed(3)}
-            label={{ value: 'Flux (MJy/sr)', angle: -90, position: 'insideLeft', fill: INK, fontSize: 13, dy: 50 }}
+            label={{ value: t('ui.axisFlux'), angle: -90, position: 'insideLeft', fill: INK, fontSize: 13, dy: 50 }}
           />
-          <Tooltip content={<Tip />} cursor={{ stroke: INK, strokeDasharray: '3 3' }} />
+          <Tooltip content={<Tip t={t} />} cursor={{ stroke: INK, strokeDasharray: '3 3' }} />
           <Scatter data={data} shape={<Dot />} isAnimationActive={false}>
             <ErrorBar dataKey="flux_err" direction="y" stroke={INK} strokeOpacity={0.5} width={0} />
           </Scatter>

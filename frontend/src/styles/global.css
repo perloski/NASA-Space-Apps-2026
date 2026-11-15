@@ -946,3 +946,20 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
 .tour-items li + li { margin-top: 3px; }
 .tour-items b { color: var(--yellow); font-weight: 600; }
 .tour-card.wide { width: min(520px, calc(100vw - 16px)); }
+
+/* ================= Selector de idioma ================= */
+.lang-select {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-field); border: 1px solid var(--line); border-radius: 6px;
+  padding: 4px 8px; color: var(--text); font-size: 15px;
+}
+.lang-select:focus-within { border-color: var(--orange); box-shadow: 0 0 0 2px rgba(242, 100, 25, 0.35); }
+.lang-select select {
+  background: transparent; color: var(--text); border: none; outline: none;
+  font-family: 'Outfit', sans-serif; font-size: 15px; cursor: pointer;
+}
+.lang-select option { background: var(--bg-deep); color: var(--text); }
+/* esquina superior derecha: idioma + marca */
+.top-right { position: absolute; top: 20px; right: 24px; display: flex; align-items: center; gap: 14px; z-index: 5; }
+.top-right .brand-small { position: static; }
+.screen-scroll > .top-right { position: fixed; z-index: 10; }

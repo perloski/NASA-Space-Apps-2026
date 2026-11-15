@@ -7,9 +7,10 @@ import PlayerControls from '../components/PlayerControls.jsx'
 import Sidebar, { backgroundUrl } from '../components/Sidebar.jsx'
 import WithHelp from '../components/WithHelp.jsx'
 import ViewCaption from '../components/ViewCaption.jsx'
-import Tour, { tourAlreadySeen } from '../components/Tour.jsx'
+import Tour, { VIEWER_TOUR, tourAlreadySeen } from '../components/Tour.jsx'
 import { getPhot, isMeasuring, measureOnce, photKey, savePhot } from '../photCache.js'
-import { HELP } from '../help.js'
+import { dateTimeLabel, monthLabel, useI18n, withLang } from '../i18n/index.jsx'
+import LanguageSelect from '../components/LanguageSelect.jsx'
 
 // Estado del visor = parámetros de la URL (copiar el link reproduce la misma vista).
 const DEFAULTS = {
@@ -18,13 +19,8 @@ const DEFAULTS = {
 }
 // Columnas de la tabla de fotometría: [encabezado, término del glosario, qué es]
 const TABLE_COLUMNS = [
-  ['Frame', 'frame', 'Name of the single photo'],
-  ['Det', 'detector', 'Detector: infrared “color” range'],
-  ['λ (µm)', 'wavelength', 'Wavelength: the exact infrared color measured'],
-  ['MJD', 'mjd', 'Date of the photo, as astronomers count days'],
-  ['Flux', 'flux', 'Brightness of the object'],
-  ['Err', 'uncertainty', 'Uncertainty: how much the brightness could be off'],
-  ['Flag', 'flagged-pixel', 'Marked when the measurement may be affected by a known problem'],
+  ['colFrame', 'frame'], ['colDet', 'detector'], ['colWave', 'wavelength'], ['colMjd', 'mjd'],
+  ['colFlux', 'flux'], ['colErr', 'uncertainty'], ['colFlag', 'flagged-pixel'],
 ]
 const MIN_ARROW_SPEED = 0.5 // arcsec/año: más lento que esto la flecha no se vería
 const MAX_FRAMES = 40 // modo "frames": cada frame es una capa; más que esto satura el navegador
@@ -74,6 +70,8 @@ function sample(list, n) {
 }
 
 export default function Viewer() {
+  const { t, m, lang } = useI18n()
+  const H = m.help
   const [sp, setSp] = useSearchParams()
   const navigate = useNavigate()
   const s = useMemo(() => readState(sp), [sp])
@@ -92,13 +90,13 @@ export default function Viewer() {
   const [skyState, setSkyState] = useState({ loading: false, error: null })
 
   useEffect(() => {
-    if (!queryQs) { setSkyState({ loading: false, error: 'Enter coordinates to start.' }); return }
+    if (!queryQs) { setSkyState({ loading: false, error: { key: 'ui.enterToStart' } }); return }
     let cancelled = false
     setSkyState({ loading: true, error: null })
     const t = setTimeout(() => {
       fetchSky(queryQs)
         .then((data) => { if (!cancelled) { setSky(data); setSkyState({ loading: false, error: null }) } })
-        .catch((e) => { if (!cancelled) { setSky(null); setSkyState({ loading: false, error: e.message }) } })
+        .catch((e) => { if (!cancelled) { setSky(null); setSkyState({ loading: false, error: { key: `errors.${e.code ?? 'INTERNAL'}` } }) } })
     }, 350)
     return () => { cancelled = true; clearTimeout(t) }
   }, [queryQs])
@@ -127,8 +125,8 @@ export default function Viewer() {
     const stretch = { stretch: s.stretch }
     if (s.mode === 'diff') {
       if (!epochA || !epochB || epochA === epochB) return []
-      const la = epochs.find((e) => e.id === epochA)?.label
-      const lb = epochs.find((e) => e.id === epochB)?.label
+      const la = monthLabel(epochs.find((e) => e.id === epochA).mjd_mid, lang)
+      const lb = monthLabel(epochs.find((e) => e.id === epochB).mjd_mid, lang)
       return [{
         key: `diff-${epochA}-${epochB}-${s.det}`, url: apiUrl(diffUrl(sky, epochA, epochB, s.det)),
         label: `${lb} − ${la}`, epochId: epochB,
@@ -138,15 +136,15 @@ export default function Viewer() {
       const frames = sky.frames.filter((f) => f.detector === effDet).sort((x, y) => x.mjd - y.mjd)
       return sample(frames, MAX_FRAMES).map((f) => ({
         key: `${f.id}-${s.stretch}`, url: apiUrl(withParams(f.image_url, stretch)),
-        label: f.date_utc.slice(0, 16).replace('T', ' '), epochId: f.epoch_id, frame: f,
+        label: dateTimeLabel(f.date_utc, lang), epochId: f.epoch_id, frame: f,
         sub: f.wavelength_at_target_um ? `${f.detector} · λ ${f.wavelength_at_target_um.toFixed(3)} µm` : f.detector,
       }))
     }
     return epochs.filter((e) => e.stacks[s.det]).map((e) => ({
       key: `${e.id}-${s.det}-${s.stretch}`, url: apiUrl(withParams(e.stacks[s.det].image_url, stretch)),
-      label: e.label, epochId: e.id, sub: `${s.det} · ${e.stacks[s.det].n_frames} frames stacked`,
+      label: monthLabel(e.mjd_mid, lang), epochId: e.id, sub: t('ui.framesStacked', { det: s.det, n: e.stacks[s.det].n_frames }),
     }))
-  }, [sky, s.mode, s.det, s.stretch, effDet, epochs, epochA, epochB])
+  }, [sky, s.mode, s.det, s.stretch, effDet, epochs, epochA, epochB, lang, t])
 
   const marker = useMemo(() => {
     if (!s.mark || !sky) return null
@@ -226,13 +224,13 @@ export default function Viewer() {
 
   // recordar cómo quedó el panel (abierto/cerrado, espectro o curva de luz, detector)
   useEffect(() => {
-    if (phot.data) savePhot(pKey, { view: photView, lcDet, open: photOpen })
+    if (phot.data?.points?.length) savePhot(pKey, { view: photView, lcDet, open: photOpen })
   }, [pKey, phot.data, photView, lcDet, photOpen])
 
   function attach(key, promise) {
     promise
       .then((data) => { if (pKeyRef.current === key) { setPhot({ loading: false, data, error: null }); openPhot() } })
-      .catch((e) => { if (pKeyRef.current === key) setPhot({ loading: false, data: null, error: e.message }) })
+      .catch((e) => { if (pKeyRef.current === key) setPhot({ loading: false, data: null, error: e.code ?? 'INTERNAL' }) })
   }
 
   function closePhot() {
@@ -282,7 +280,7 @@ export default function Viewer() {
   function onGo(text) {
     const parts = text.trim().split(/[\s,]+/).map(Number)
     if (parts.length !== 2 || parts.some((v) => !Number.isFinite(v))) {
-      setSkyState({ loading: false, error: 'Use decimal degrees: "RA Dec", e.g. 133.786245 -7.244373' })
+      setSkyState({ loading: false, error: { key: 'ui.coordsError', vars: { example: '133.786245 -7.244373' } } })
       return
     }
     setSp((cur) => { const n = writeParams(cur, { ra: parts[0], dec: parts[1] }); n.delete('target'); return n })
@@ -298,24 +296,27 @@ export default function Viewer() {
 
   const [shareMsg, setShareMsg] = useState('')
   function onShare() {
-    navigator.clipboard?.writeText(window.location.href)
-      .then(() => setShareMsg('Link copied!'), () => setShareMsg('Copy failed'))
+    // el link compartido lleva el idioma, para que se abra igual
+    navigator.clipboard?.writeText(window.location.origin + withLang(window.location.pathname + window.location.search, lang))
+      .then(() => setShareMsg(t('ui.linkCopied')), () => setShareMsg(t('ui.copyFailed')))
     setTimeout(() => setShareMsg(''), 2000)
   }
 
   // ---- Render
   const q = sky?.query
-  const title = q?.target_name ?? (s.target ? 'Loading…' : 'Custom coordinates')
+  const title = q?.target_name
+    ? (m.targetNames[s.target] ?? q.target_name)
+    : (s.target ? t('ui.loading') : t('ui.customCoords'))
   const centerRa = q?.ra_deg ?? s.ra ?? 0
   const centerDec = q?.dec_deg ?? s.dec ?? 0
 
   let status = null
-  if (skyState.loading) status = <><span className="spinner" />Querying SPHEREx archive…</>
-  else if (skyState.error) status = skyState.error
-  else if (s.mode === 'diff' && epochA === epochB) status = 'Pick two different epochs.'
-  else if (layerStatus?.errors.length) status = `Some images failed: ${layerStatus.errors[0]}`
+  if (skyState.loading) status = <><span className="spinner" />{t('ui.querying')}</>
+  else if (skyState.error) status = t(skyState.error.key, skyState.error.vars)
+  else if (s.mode === 'diff' && epochA === epochB) status = t('ui.pickTwo')
+  else if (layerStatus?.errors.length) status = t('ui.someFailed', { error: layerStatus.errors[0] })
   else if (layerStatus && layerStatus.loaded < layerStatus.total) {
-    status = <><span className="spinner" />Loading SPHEREx images {layerStatus.loaded}/{layerStatus.total}… (the first time can take ~30 s)</>
+    status = <><span className="spinner" />{t('ui.loadingImages', { loaded: layerStatus.loaded, total: layerStatus.total })}</>
   }
   const statusIsError = !skyState.loading && (skyState.error || layerStatus?.errors.length)
 
@@ -328,21 +329,24 @@ export default function Viewer() {
       />
 
       <main className="viewer-main" ref={mainRef}>
-        <button className="btn btn-corner btn-left" onClick={() => navigate('/explore')}>← BACK</button>
-        <span className="brand-small">OpenSPHEREx</span>
+        <button className="btn btn-corner btn-left" onClick={() => navigate('/explore')}>{t('ui.back')}</button>
+        <div className="top-right">
+          <LanguageSelect />
+          <span className="brand-small">OpenSPHEREx</span>
+        </div>
 
         <h2 className="viewer-title anim" style={{ '--i': 2 }}>{title}</h2>
         <p className="viewer-sub anim" style={{ '--i': 3 }}>
-          {q ? `RA ${q.ra_deg.toFixed(5)}°  ·  Dec ${q.dec_deg.toFixed(5)}°` : (s.coordsText || '–')}
-          {`  ·  FOV ${s.fov}′  ·  ${s.mode === 'frames' ? effDet : s.det}`}
-          {q?.coord_epoch ? `  ·  coords ${q.coord_epoch}` : ''}
+          {q ? t('ui.coordsTooltip', { ra: q.ra_deg.toFixed(5), dec: q.dec_deg.toFixed(5) }) : (s.coordsText || '–')}
+          {`  ·  ${t('ui.fovShort', { fov: s.fov })}  ·  ${s.mode === 'frames' ? effDet : s.det}`}
+          {q?.coord_epoch ? `  ·  ${t('ui.coordsEpoch', { epoch: q.coord_epoch })}` : ''}
         </p>
         <div className="viewer-tools anim" style={{ '--i': 3 }}>
-          <WithHelp help={HELP.tour}>
-            <button className="link" onClick={() => setTourOpen(true)}>🧭 Take the tour</button>
+          <WithHelp help={H.tour}>
+            <button className="link" onClick={() => setTourOpen(true)}>{t('ui.takeTour')}</button>
           </WithHelp>
-          <WithHelp help={HELP.glossary}>
-            <a className="link" href="/glossary" target="_blank" rel="noopener">📖 Glossary</a>
+          <WithHelp help={H.glossary}>
+            <a className="link" href={withLang('/glossary', lang)} target="_blank" rel="noopener">{t('ui.glossaryLink')}</a>
           </WithHelp>
         </div>
 
@@ -358,7 +362,7 @@ export default function Viewer() {
           {status && <div className={`viewer-status${statusIsError ? ' error' : ''}`}>{status}</div>}
         </div>
 
-        <WithHelp help={HELP.player} className="player-help" data-tour="player">
+        <WithHelp help={H.player} className="player-help" data-tour="player">
           <PlayerControls
             playing={playing} onToggle={() => setPlaying((p) => !p)} onPrev={prev} onNext={next}
             onSelect={setIndex} index={Math.min(index, Math.max(0, count - 1))} count={count}
@@ -375,60 +379,57 @@ export default function Viewer() {
         {sky && (
           <section className="phot-panel anim" style={{ '--i': 5 }} ref={photRef} data-tour="photometry">
             <div className="phot-head">
-              <h3>{photView === 'spectrum' ? 'Spectrum' : 'Light curve'}</h3>
+              <h3>{photView === 'spectrum' ? t('ui.spectrum') : t('ui.lightCurve')}</h3>
               {phot.data && photOpen && (
-                <WithHelp help={HELP.photViews} innerClassName="tabs" role="tablist">
-                  <button className={`tab${photView === 'spectrum' ? ' on' : ''}`} onClick={() => setPhotView('spectrum')}>Spectrum</button>
-                  <button className={`tab${photView === 'lightcurve' ? ' on' : ''}`} onClick={() => setPhotView('lightcurve')}>Light curve</button>
+                <WithHelp help={H.photViews} innerClassName="tabs" role="tablist">
+                  <button className={`tab${photView === 'spectrum' ? ' on' : ''}`} onClick={() => setPhotView('spectrum')}>{t('ui.spectrum')}</button>
+                  <button className={`tab${photView === 'lightcurve' ? ' on' : ''}`} onClick={() => setPhotView('lightcurve')}>{t('ui.lightCurve')}</button>
                 </WithHelp>
               )}
               {phot.data && photOpen && photView === 'lightcurve' && (
-                <select className="vselect" aria-label="Light curve detector" value={lcDet} onChange={(e) => setLcDet(e.target.value)}>
+                <select className="vselect" aria-label={t('ui.lcDetAria')} value={lcDet} onChange={(e) => setLcDet(e.target.value)}>
                   {photDets.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
               )}
               {!phot.data && (
-                <WithHelp help={HELP.photometry}>
+                <WithHelp help={H.photometry}>
                   <button className="btn" onClick={loadPhotometry} disabled={phot.loading}>
-                    {phot.loading ? 'Measuring…' : 'Measure target flux'}
+                    {phot.loading ? t('ui.measuring') : t('ui.measure')}
                   </button>
                 </WithHelp>
               )}
               {phot.data && (photOpen
-                ? <button className="btn btn-ghost" onClick={closePhot} aria-label="Close spectrum panel">✕ Close</button>
-                : <button className="btn" onClick={openPhot}>Show {photView === 'spectrum' ? 'spectrum' : 'light curve'}</button>)}
+                ? <button className="btn btn-ghost" onClick={closePhot} aria-label={t('ui.closeAria')}>{t('ui.close')}</button>
+                : <button className="btn" onClick={openPhot}>{photView === 'spectrum' ? t('ui.showSpectrum') : t('ui.showLightCurve')}</button>)}
             </div>
 
             {phot.loading && (
-              <p className="phot-note"><span className="spinner" />Measuring the target in every frame
-                {s.det !== 'ALL' ? ` of ${s.det}` : ''}. The first time can take a few minutes.</p>
+              <p className="phot-note"><span className="spinner" />
+                {s.det !== 'ALL' ? t('ui.measuringNoteDet', { det: s.det }) : t('ui.measuringNote')}</p>
             )}
-            {phot.error && <p className="err-text">{phot.error}</p>}
+            {phot.error && <p className="err-text">{t(`errors.${phot.error}`)}</p>}
             {!phot.data && !phot.loading && !phot.error && (
-              <p className="phot-note">
-                Flux at the target position in each frame: plot it against wavelength (spectrum, e.g. methane
-                and water absorption in brown dwarfs) or against time (light curve, for variable stars).
-              </p>
+              <p className="phot-note">{t('ui.photIntro')}</p>
             )}
             {phot.data && !photOpen && (
-              <p className="phot-note">{phot.data.points.length} points measured. Open the panel to see the chart and the data.</p>
+              <p className="phot-note">{t('ui.pointsMeasured', { n: phot.data.points.length })}</p>
             )}
             {phot.data && photOpen && (
               <>
                 <PhotometryChart points={photPoints} view={photView} detectors={sky.detectors} />
                 <p className="phot-note">
-                  {photPoints.length} points · ● good · ○ flagged pixel in aperture · flux in {phot.data.flux_units}
+                  {t('ui.pointsLegend', { n: photPoints.length, units: phot.data.flux_units })}
                 </p>
                 <details className="phot-note">
-                  <summary>Show data table</summary>
-                  <div className="data-table-wrap" tabIndex={0} aria-label="Photometry data table">
+                  <summary>{t('ui.showTable')}</summary>
+                  <div className="data-table-wrap" tabIndex={0} aria-label={t('ui.tableAria')}>
                     <table className="data-table">
                       <thead>
                         <tr>
-                          {TABLE_COLUMNS.map(([label, term, what]) => (
+                          {TABLE_COLUMNS.map(([col, term]) => [t(`ui.${col}`), term, t(`ui.${col}What`)]).map(([label, term, what]) => (
                             <th key={label}>
-                              <a href={`/glossary#${term}`} target="_blank" rel="noopener"
-                                title={`${what} (opens the glossary)`} aria-label={`${label}: ${what}. Opens the glossary in a new tab.`}>
+                              <a href={withLang(`/glossary#${term}`, lang)} target="_blank" rel="noopener"
+                                title={`${what} ${t('ui.opensGlossary')}`} aria-label={`${label}: ${what}. ${t('ui.opensGlossaryTab')}`}>
                                 {label}
                               </a>
                             </th>
@@ -455,7 +456,10 @@ export default function Viewer() {
           </section>
         )}
       </main>
-      <Tour open={tourOpen} onClose={() => setTourOpen(false)} />
+      <Tour
+        open={tourOpen} onClose={() => setTourOpen(false)}
+        steps={VIEWER_TOUR.map((st) => ({ sel: st.sel, ...m.tours.viewer[st.id] }))}
+      />
     </section>
   )
 }

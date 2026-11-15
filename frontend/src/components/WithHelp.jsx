@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { GLOSSARY_BY_ID } from '../glossary.js'
+import { useI18n, withLang } from '../i18n/index.jsx'
 
 // Envuelve un control y muestra su explicación (textos en src/help.js).
 //
@@ -22,6 +22,7 @@ const CLOSE_GRACE = 150 // ms para poder mover el mouse del control a la ayuda
 const GAP = 10
 
 export default function WithHelp({ help, as: Tag = 'div', className = '', style, innerClassName = '', children, ...rest }) {
+  const { t, m, lang } = useI18n()
   const id = useId()
   const descId = `help-${id}`
   const wrapRef = useRef(null)
@@ -114,7 +115,7 @@ export default function WithHelp({ help, as: Tag = 'div', className = '', style,
         type="button"
         className={`help-icon${open ? ' on' : ''}`}
         tabIndex={-1} // con teclado la ayuda ya se abre al llegar al control: el ícono no suma paradas al Tab
-        aria-label={`What is “${help.title}”?`}
+        aria-label={t('ui.whatIs', { title: help.title })}
         aria-expanded={pinned}
         onClick={() => { setDismissed(false); setPinned((p) => !p) }}
       >
@@ -122,7 +123,7 @@ export default function WithHelp({ help, as: Tag = 'div', className = '', style,
       </button>
       {/* Texto para lectores de pantalla (siempre presente, no se ve) */}
       <span id={descId} className="sr-only">
-        {`${help.does} What you will see: ${help.see}${help.tip ? ` Tip: ${help.tip}` : ''}`}
+        {`${help.does} ${t('ui.srSee')} ${help.see}${help.tip ? ` ${t('ui.srTip')} ${help.tip}` : ''}`}
       </span>
       {open && createPortal(
         <div
@@ -135,19 +136,19 @@ export default function WithHelp({ help, as: Tag = 'div', className = '', style,
           onPointerLeave={(e) => { if (e.pointerType === 'mouse') leave() }}
         >
           <p className="help-title">{help.title}</p>
-          <p className="help-label">What it does</p>
+          <p className="help-label">{t('ui.whatItDoes')}</p>
           <p>{help.does}</p>
-          <p className="help-label">What you will see</p>
+          <p className="help-label">{t('ui.whatYouSee')}</p>
           <p>{help.see}</p>
           {help.tip && <p className="help-tipline"><span aria-hidden="true">💡 </span>{help.tip}</p>}
           {help.terms?.length > 0 && (
             <p className="help-terms">
-              Learn more:{' '}
-              {help.terms.map((t, i) => (
-                <span key={t}>
+              {t('ui.learnMore')}{' '}
+              {help.terms.map((term, i) => (
+                <span key={term}>
                   {i > 0 && ' · '}
                   {/* tabIndex -1: la ayuda visual es aria-hidden; el glosario también está enlazado en la página */}
-                  <a href={`/glossary#${t}`} target="_blank" rel="noopener" tabIndex={-1}>{GLOSSARY_BY_ID[t]?.term ?? t}</a>
+                  <a href={withLang(`/glossary#${term}`, lang)} target="_blank" rel="noopener" tabIndex={-1}>{m.glossary[term]?.term ?? term}</a>
                 </span>
               ))}
             </p>

@@ -4,16 +4,24 @@
 const BASE = import.meta.env.VITE_API_BASE ?? '' // vacío en dev/preview (usa el proxy)
 export const apiUrl = (path) => `${BASE}${path}`
 
+// Los errores llevan .code (BAD_PARAMS, NO_COVERAGE, UPSTREAM_TIMEOUT, INTERNAL, NETWORK): la
+// interfaz muestra el texto de ese código en el idioma elegido (errors.* en i18n/locales).
+function apiError(code, message) {
+  const e = new Error(message)
+  e.code = code
+  return e
+}
+
 async function get(path) {
   let r
   try {
     r = await fetch(apiUrl(path))
   } catch {
-    throw new Error('Cannot reach the backend. Is it running on port 8000?')
+    throw apiError('NETWORK', 'Cannot reach the backend. Is it running on port 8000?')
   }
   let body = null
   try { body = await r.json() } catch { /* respuesta no JSON */ }
-  if (!r.ok) throw new Error(body?.error?.message ?? `Error ${r.status}`)
+  if (!r.ok) throw apiError(body?.error?.code ?? 'INTERNAL', body?.error?.message ?? `Error ${r.status}`)
   return body
 }
 

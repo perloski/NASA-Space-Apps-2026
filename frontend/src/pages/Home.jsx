@@ -1,25 +1,28 @@
 import { useNavigate } from 'react-router-dom'
 import AnimatedTitle from '../components/AnimatedTitle.jsx'
+import LanguageSelect from '../components/LanguageSelect.jsx'
+import { useI18n } from '../i18n/index.jsx'
 
 export default function Home() {
   const navigate = useNavigate()
+  const { t } = useI18n()
   return (
     <section id="screen-home" className="screen active">
-      <button className="btn btn-corner btn-right" onClick={() => console.log('TODO: cambiar idioma')}>Language</button>
+      <div className="top-right"><LanguageSelect /></div>
 
-      <p className="kicker anim" style={{ '--i': 0 }}>NASA Space App Challenge 2026- Team Athenas IV</p>
+      <p className="kicker anim" style={{ '--i': 0 }}>{t('ui.kicker')}</p>
       <div className="title-wrap">
         <AnimatedTitle text="OpenSPHEREx" />
-        <span className="tagline">Bringing the cosmos to everyone</span>
+        <span className="tagline">{t('ui.tagline')}</span>
       </div>
 
-      <button className="btn btn-start" onClick={() => navigate('/explore')}>START</button>
+      <button className="btn btn-start" onClick={() => navigate('/explore')}>{t('ui.start')}</button>
 
       <nav className="footer-links">
-        <button className="link anim" style={{ '--i': 14 }} onClick={() => navigate('/about')}>About SPHEREx</button>
-        <button className="link anim" style={{ '--i': 15 }} onClick={() => console.log('TODO: abrir "About the challenge"')}>About The Challenge</button>
-        <button className="link anim" style={{ '--i': 16 }} onClick={() => navigate('/team')}>About The Team</button>
-        <button className="link anim" style={{ '--i': 17 }} onClick={() => navigate('/glossary')}>Glossary</button>
+        <button className="link anim" style={{ '--i': 14 }} onClick={() => navigate('/about')}>{t('ui.aboutSpherex')}</button>
+        <button className="link anim" style={{ '--i': 15 }} onClick={() => console.log('TODO: abrir "About the challenge"')}>{t('ui.aboutChallenge')}</button>
+        <button className="link anim" style={{ '--i': 16 }} onClick={() => navigate('/team')}>{t('ui.aboutTeam')}</button>
+        <button className="link anim" style={{ '--i': 17 }} onClick={() => navigate('/glossary')}>{t('ui.glossary')}</button>
       </nav>
     </section>
   )

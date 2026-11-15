@@ -1,28 +1,21 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useI18n } from '../i18n/index.jsx'
 
 // Recorrido guiado: ilumina una parte de la pantalla por vez (elementos con data-tour="...") y
 // la explica. Se abre solo la primera vez (recordado en localStorage) y con el botón "Take the tour".
 // Accesible: diálogo con foco en "Next", Escape para salir, el foco vuelve a donde estaba.
 
-// Pasos del visor (cada pantalla puede pasar los suyos con la prop "steps")
-export const TOUR_STEPS = [
-  { sel: '[data-tour="sky"]', title: 'This is the sky',
-    text: 'A small patch of sky photographed by NASA’s SPHEREx telescope in infrared light. Drag to move around, scroll to zoom in and out.' },
-  { sel: '[data-tour="player"]', title: 'Pictures from different dates',
-    text: 'SPHEREx photographs the whole sky every six months. These controls play those dates like a flipbook: stars stay still and anything that moved seems to jump.' },
-  { sel: '[data-tour="caption"]', title: 'What am I looking at?',
-    text: 'This box always describes, in plain words, what is on screen right now and what to look for.' },
-  { sel: '[data-tour="recipes"]', title: 'Quick recipes',
-    text: 'Not sure where to start? Each recipe changes several settings at once for a common task, like spotting something that moves.' },
-  { sel: '[data-tour="mode"]', title: 'Viewing mode',
-    text: '“Blink” animates the dates, “Single frames” shows each photo, and “Difference” subtracts two dates so only what changed stands out.' },
-  { sel: '[data-tour="detector"]', title: 'Infrared “colors”',
-    text: 'SPHEREx has six detectors, each sensitive to a different infrared color. Cold objects like brown dwarfs shine most in D5 and D6.' },
-  { sel: '[data-tour="photometry"]', title: 'Measure the brightness',
-    text: 'Measures how bright the object in the center is in every photo, to draw its spectrum (brightness by color) or its light curve (brightness over time).' },
-  { sel: '.sidebar .help-icon', title: 'Help is everywhere',
-    text: 'Hover any control, reach it with the Tab key, or tap its ⓘ icon to see what it does. The “Glossary” link explains every space word in simple terms.' },
+// Partes del visor que ilumina su recorrido (los textos están en i18n: tours.viewer.<id>)
+export const VIEWER_TOUR = [
+  { id: 'sky', sel: '[data-tour="sky"]' },
+  { id: 'player', sel: '[data-tour="player"]' },
+  { id: 'caption', sel: '[data-tour="caption"]' },
+  { id: 'recipes', sel: '[data-tour="recipes"]' },
+  { id: 'mode', sel: '[data-tour="mode"]' },
+  { id: 'detector', sel: '[data-tour="detector"]' },
+  { id: 'photometry', sel: '[data-tour="photometry"]' },
+  { id: 'help', sel: '.sidebar .help-icon' },
 ]
 
 // Cada recorrido recuerda por separado si ya se vio (visor, pantalla de coordenadas, ...)
@@ -36,7 +29,9 @@ function markSeen(key) {
 
 const PAD = 6
 
-export default function Tour({ open, onClose, steps: allSteps = TOUR_STEPS, storageKey = TOUR_KEYS.viewer }) {
+// steps: [{ sel, title, text, items? }] ya traducidos por quien abre el recorrido
+export default function Tour({ open, onClose, steps: allSteps, storageKey = TOUR_KEYS.viewer }) {
+  const { t } = useI18n()
   const [step, setStep] = useState(0)
   const [rect, setRect] = useState(null)
   const cardRef = useRef(null)
@@ -47,6 +42,9 @@ export default function Tour({ open, onClose, steps: allSteps = TOUR_STEPS, stor
   // Pasos cuyo elemento existe ahora (p. ej. sin datos todavía no hay leyenda)
   const steps = allSteps.filter((s) => open && document.querySelector(s.sel))
   const cur = steps[Math.min(step, steps.length - 1)]
+  // los pasos llegan como objetos nuevos en cada render (vienen traducidos): los efectos dependen
+  // del selector, que es estable, para no repetirse en cada render
+  const curSel = cur?.sel
 
   const close = useCallback(() => {
     markSeen(storageKey)
@@ -64,7 +62,7 @@ export default function Tour({ open, onClose, steps: allSteps = TOUR_STEPS, stor
     if (!el) return
     const r = el.getBoundingClientRect()
     setRect({ left: r.left - PAD, top: r.top - PAD, width: r.width + 2 * PAD, height: r.height + 2 * PAD })
-  }, [cur])
+  }, [curSel]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Al cambiar de paso: llevar el elemento a la vista y medirlo
   useEffect(() => {
@@ -77,7 +75,7 @@ export default function Tour({ open, onClose, steps: allSteps = TOUR_STEPS, stor
     measure()
     nextRef.current?.focus()
     return () => clearTimeout(t)
-  }, [open, cur, measure])
+  }, [open, curSel, step, measure]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!open) return
@@ -135,7 +133,7 @@ export default function Tour({ open, onClose, steps: allSteps = TOUR_STEPS, stor
           else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus() }
         }}
       >
-        <p className="tour-count">Step {step + 1} of {steps.length}</p>
+        <p className="tour-count">{t('ui.stepOf', { n: step + 1, total: steps.length })}</p>
         <h3 id="tour-title">{cur.title}</h3>
         <p id="tour-text">{cur.text}</p>
         {cur.items && (
@@ -144,11 +142,11 @@ export default function Tour({ open, onClose, steps: allSteps = TOUR_STEPS, stor
           </ul>
         )}
         <div className="tour-actions">
-          <button className="link" onClick={close}>Skip tour</button>
+          <button className="link" onClick={close}>{t('ui.skipTour')}</button>
           <span style={{ flex: 1 }} />
-          {step > 0 && <button className="btn btn-ghost" onClick={() => setStep(step - 1)}>Back</button>}
+          {step > 0 && <button className="btn btn-ghost" onClick={() => setStep(step - 1)}>{t('ui.tourBack')}</button>}
           <button ref={nextRef} className="btn" onClick={() => (last ? close() : setStep(step + 1))}>
-            {last ? 'Done' : 'Next'}
+            {last ? t('ui.tourDone') : t('ui.tourNext')}
           </button>
         </div>
       </div>

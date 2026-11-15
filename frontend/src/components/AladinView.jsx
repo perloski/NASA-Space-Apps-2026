@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import A from 'aladin-lite'
+import { useI18n } from '../i18n/index.jsx'
 
 // ÚNICO componente que toca la API de Aladin Lite (v3.8.2, fijada en package.json).
 // El resto de la app le pasa props y nunca llama a Aladin directamente.
@@ -33,6 +34,7 @@ export default function AladinView({
   ra, dec, fovArcmin, layers, wcs, activeIndex = 0, opacity = 1, invert = false,
   background = 'none', gaiaSources = null, onStatus, marker = null, arrow = null,
 }) {
+  const { t } = useI18n()
   const divRef = useRef(null)
   const aladinRef = useRef(null)
   const gaiaRef = useRef(null)
@@ -199,7 +201,7 @@ export default function AladinView({
         <div ref={divRef} style={{ width: '100%', height: '100%' }} />
       </div>
       {initError && (
-        <div className="viewer-status error">Aladin could not start: {initError}</div>
+        <div className="viewer-status error">{t('ui.aladinFailed', { error: initError })}</div>
       )}
     </>
   )
