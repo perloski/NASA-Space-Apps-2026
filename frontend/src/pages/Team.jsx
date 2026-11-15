@@ -1,12 +1,16 @@
 import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../i18n/index.jsx'
 import LanguageSelect from '../components/LanguageSelect.jsx'
+import gatoEmi from '../images/Gatos-presentacion-Emi.png'
+import gatoLaza from '../images/Gatos-presentacion-Laza.png'
+import gatoPerla from '../images/Gatos-presentacion-Perla.png'
+import gatoAlma from '../images/Gatos-presentacion.png'
 
 const TEAM = [
-  { name: 'Emiliano', role: 'roleBackend' },
-  { name: 'Lazaro', role: 'roleBackend' },
-  { name: 'Alma', role: 'roleDesigner' },
-  { name: 'Perla', role: 'roleFrontend' },
+  { name: 'Emiliano', role: 'roleBackend', cat: gatoEmi },
+  { name: 'Lazaro', role: 'roleBackend', cat: gatoLaza },
+  { name: 'Alma', role: 'roleDesigner', cat: gatoAlma },
+  { name: 'Perla', role: 'roleFrontend', cat: gatoPerla },
 ]
 
 export default function Team() {
@@ -28,8 +32,11 @@ export default function Team() {
           {TEAM.map((p, i) => (
             <article key={p.name} className="team-card anim" style={{ '--i': 2 + i }}>
               <div className="avatar" aria-hidden="true">{p.name[0]}</div>
-              <h2 className="member-name">{p.name}</h2>
-              <p className="member-role">{t(`ui.${p.role}`)}</p>
+              <div className="team-card-info">
+                <h2 className="member-name">{p.name}</h2>
+                <p className="member-role">{t(`ui.${p.role}`)}</p>
+              </div>
+              <img src={p.cat} alt="" className="team-card-cat" />
             </article>
           ))}
         </div>
