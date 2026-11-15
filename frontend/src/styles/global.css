@@ -737,13 +737,14 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
 .viewer-status.error { border-color: var(--orange); color: var(--orange-light); white-space: normal; max-width: 90%; }
 .spinner {
   display: inline-block;
-  width: 12px; height: 12px;
-  margin-right: 8px;
-  border: 2px solid var(--line);
-  border-top-color: var(--orange);
-  border-radius: 50%;
-  vertical-align: -1px;
-  animation: spin 0.8s linear infinite;
+  /* Gatito corriendo en una rueda: el gato está dibujado sobre un arco
+     alrededor del centro del lienzo, así que girar la imagen entera lo hace
+     "correr" por dentro de la rueda. */
+  width: 28px; height: 28px;
+  margin: -6px 6px -6px 0;
+  background: url('../images/Gatito-Carga.png') center / contain no-repeat;
+  vertical-align: middle;
+  animation: spin 1.2s linear infinite reverse; /* antihorario: hacia donde mira el gato */
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
