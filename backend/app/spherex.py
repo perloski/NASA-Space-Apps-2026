@@ -148,6 +148,7 @@ def find_frames(ra: float, dec: float) -> list[dict]:
         if cached is not None:
             return cached
         rows: list[dict] = []
+        errors: list[Exception] = []
         for c in colls:
             try:
                 rows += _query_collection(ra, dec, c)
@@ -155,10 +156,14 @@ def find_frames(ra: float, dec: float) -> list[dict]:
                 raise upstream_timeout("IRSA (SIA)") from e
             except Exception as e:  # noqa: BLE001  colección inexistente, etc.
                 log.warning("SIA falló para %s: %s", c, e)
+                errors.append(e)
+        if not rows and len(errors) == len(colls):
+            raise upstream_timeout("IRSA (SIA)")
         frames = dedupe(rows, colls)
         for f in frames:
             f["date_utc"] = _isot_z(f["mjd"])
-        cache.write_json(p, frames)
+        if not errors:
+            cache.write_json(p, frames)
         return frames
 
 

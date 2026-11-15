@@ -98,6 +98,7 @@ def _png(data: bytes) -> Response:
 
 # ----------------------------------------------------------------------------- endpoints
 
+@app.get("/health")
 @app.get("/api/health")
 def health():
     return {"ok": True, "mock": config.MOCK, "schema_version": config.SCHEMA_VERSION}
