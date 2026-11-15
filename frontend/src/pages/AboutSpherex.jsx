@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../i18n/index.jsx'
+import LanguageSelect from '../components/LanguageSelect.jsx'
 
 export default function AboutSpherex() {
   const navigate = useNavigate()
@@ -7,7 +8,10 @@ export default function AboutSpherex() {
   return (
     <section id="screen-about" className="screen screen-scroll active">
       <button className="btn btn-corner btn-left" onClick={() => navigate('/')}>{t('ui.back')}</button>
-      <span className="brand-small">OpenSPHEREx</span>
+      <div className="top-right">
+        <LanguageSelect />
+        <span className="brand-small">OpenSPHEREx</span>
+      </div>
 
       <article className="about-content">
         <h1 className="page-title anim" style={{ '--i': 0 }}>{t('ui.aboutTitle')}</h1>

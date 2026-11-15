@@ -977,3 +977,12 @@ input[type="range"]:focus-visible { outline: 2px solid var(--yellow); outline-of
 .top-right { position: absolute; top: 20px; right: 24px; display: flex; align-items: center; gap: 14px; z-index: 5; }
 .top-right .brand-small { position: static; }
 .screen-scroll > .top-right { position: fixed; z-index: 10; }
+/* celular: no entran "Volver", el idioma y la marca en una fila: queda el idioma */
+@media (max-width: 560px) {
+  .top-right { top: 24px; right: 16px; }
+  .top-right .brand-small { display: none; }
+  .lang-select, .lang-select select { font-size: 14px; }
+  /* coordenadas: el contenido arranca debajo de los botones de arriba y el campo entra con su ⓘ */
+  #screen-coords.active { justify-content: flex-start; padding-top: 96px; overflow-y: auto; }
+  #screen-coords .input { width: calc(100vw - 48px - 60px); }
+}

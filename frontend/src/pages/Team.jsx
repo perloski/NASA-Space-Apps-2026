@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../i18n/index.jsx'
+import LanguageSelect from '../components/LanguageSelect.jsx'
 
 const TEAM = [
   { name: 'Emiliano', role: 'roleBackend' },
@@ -14,7 +15,10 @@ export default function Team() {
   return (
     <section id="screen-team" className="screen screen-scroll active">
       <button className="btn btn-corner btn-left" onClick={() => navigate('/')}>{t('ui.back')}</button>
-      <span className="brand-small">OpenSPHEREx</span>
+      <div className="top-right">
+        <LanguageSelect />
+        <span className="brand-small">OpenSPHEREx</span>
+      </div>
 
       <div className="about-content" style={{ maxWidth: 960 }}>
         <h1 className="page-title anim" style={{ '--i': 0 }}>{t('ui.teamTitle')}</h1>

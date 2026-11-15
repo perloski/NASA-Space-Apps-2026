@@ -5,6 +5,7 @@ import WithHelp from '../components/WithHelp.jsx'
 import Tour, { TOUR_KEYS, tourAlreadySeen } from '../components/Tour.jsx'
 import { cleanCoords } from '../coords.js'
 import { useI18n } from '../i18n/index.jsx'
+import LanguageSelect from '../components/LanguageSelect.jsx'
 
 // Respaldo si el backend no responde: mismas coordenadas que el prototipo (sin movimiento propio).
 const FALLBACK = [
@@ -73,7 +74,10 @@ export default function Coords() {
   return (
     <section id="screen-coords" className="screen active">
       <button className="btn btn-corner btn-left" onClick={() => navigate('/')}>{t('ui.back')}</button>
-      <span className="brand-small">OpenSPHEREx</span>
+      <div className="top-right">
+        <LanguageSelect />
+        <span className="brand-small">OpenSPHEREx</span>
+      </div>
 
       <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <h2 className="heading anim" style={{ '--i': 0 }}>{t('ui.enterCoords')}</h2>

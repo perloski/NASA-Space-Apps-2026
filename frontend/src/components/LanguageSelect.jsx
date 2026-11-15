@@ -1,6 +1,6 @@
 import { LANGUAGES, useI18n } from '../i18n/index.jsx'
 
-// Selector de idioma. Está en el inicio, en el visor y en el glosario (por si se llega a esas
+// Selector de idioma. Está arriba a la derecha en todas las pantallas (por si se llega a cualquiera
 // pantallas directamente con un link). Los nombres van en su propio idioma.
 export default function LanguageSelect({ className = '' }) {
   const { lang, setLang, t } = useI18n()
